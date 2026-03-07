@@ -1,3 +1,10 @@
+# Proyecto - Desarrollo de aplicaciones para dispositivos móviles
+## Integrantes
+- Vanessa Durán Mona 2359394
+- Alejandra Osorio Giraldo 2266128
+- David Mármol Otero 2266370
+- Alejandro Garzón Mayorga 2266088
+
 ---
 
 ## 🎬 CineLog
