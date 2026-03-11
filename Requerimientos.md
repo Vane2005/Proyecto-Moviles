@@ -136,3 +136,132 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 | CA-05-1 | El usuario selecciona un ítem de la lista | Se navega a la pantalla de detalle con toda la información cargada |
 | CA-05-2 | El ítem ya está en alguna lista personal | El botón correspondiente aparece resaltado/activo |
 | CA-05-3 | La imagen del poster no está disponible | Se muestra un placeholder en lugar del poster |
+
+---
+
+### RF-06 — Gestión de Listas Personales
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-06 |
+| **Nombre** | Agregar y eliminar contenido de listas personales |
+| **Descripción** | El sistema debe permitir al usuario organizar películas y series en tres listas: **Ver más tarde**, **Favoritas** y **Ya visto**. Un mismo ítem puede estar en más de una lista. |
+| **Prioridad** | Alta |
+| **Entradas** | Acción del usuario sobre los botones de lista en la pantalla de detalle |
+| **Proceso** | El sistema guarda o elimina el ítem en la base de datos en la nube (Firestore) asociado al usuario autenticado. |
+| **Salida** | El ítem aparece o desaparece de la lista correspondiente. El botón refleja el estado actual. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-06-1 | El usuario agrega un ítem a "Ver más tarde" | El ítem aparece en la lista "Ver más tarde" y el botón queda activo |
+| CA-06-2 | El usuario agrega el mismo ítem a "Favoritas" | El ítem aparece en ambas listas simultáneamente |
+| CA-06-3 | El usuario elimina un ítem de una lista | El ítem desaparece de esa lista sin afectar las otras |
+| CA-06-4 | El usuario cierra y reabre la app | Las listas persisten con los mismos ítems |
+
+---
+
+### RF-07 — Registro de Reseña y Calificación
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-07 |
+| **Nombre** | Registrar reseña personal y calificación |
+| **Descripción** | Cuando un usuario marca un ítem como "Ya visto", el sistema debe permitirle registrar una calificación del 1 al 5 y una reseña personal opcional. |
+| **Prioridad** | Alta |
+| **Entradas** | Calificación (1–5 estrellas), texto de reseña (opcional), fecha (automática) |
+| **Proceso** | El sistema guarda la reseña y calificación en Firestore asociada al ítem y al usuario. |
+| **Salida** | La reseña y calificación quedan visibles en la pantalla de detalle del ítem. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-07-1 | El usuario agrega un ítem a "Ya visto" con calificación y reseña | Los datos se guardan y se muestran en el detalle del ítem |
+| CA-07-2 | El usuario agrega un ítem a "Ya visto" sin escribir reseña | Solo se guarda la calificación; el campo reseña queda vacío |
+| CA-07-3 | El usuario edita una reseña existente | Los cambios se guardan y se reflejan de inmediato |
+| CA-07-4 | El usuario elimina el ítem de "Ya visto" | La reseña y calificación asociadas también se eliminan |
+
+---
+
+### RF-08 — Pantalla de Mis Listas
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-08 |
+| **Nombre** | Visualizar listas personales del usuario |
+| **Descripción** | El sistema debe mostrar una pantalla donde el usuario pueda navegar entre sus tres listas y ver los ítems guardados en cada una. |
+| **Prioridad** | Alta |
+| **Entradas** | Navegación del usuario hacia la sección "Mis Listas" |
+| **Proceso** | El sistema consulta Firestore y carga los ítems de cada lista para el usuario autenticado. |
+| **Salida** | Pantalla con tabs o secciones para cada lista, mostrando poster y título de cada ítem. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-08-1 | El usuario tiene ítems en sus listas | Se muestran correctamente agrupados por lista |
+| CA-08-2 | Una lista está vacía | Se muestra un estado vacío con mensaje ilustrativo |
+| CA-08-3 | El usuario presiona un ítem de la lista | Navega al detalle de ese ítem |
+
+---
+
+### RF-09 — Pantalla de Perfil y Estadísticas
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-09 |
+| **Nombre** | Ver perfil y estadísticas personales |
+| **Descripción** | El sistema debe mostrar al usuario su perfil básico junto con estadísticas derivadas de su actividad en la app. |
+| **Prioridad** | Media |
+| **Entradas** | Navegación del usuario hacia la sección "Perfil" |
+| **Proceso** | El sistema calcula las estadísticas a partir de los datos almacenados en Firestore. |
+| **Salida** | Nombre del usuario, foto de perfil, cantidad de ítems vistos, cantidad en watchlist y géneros más vistos. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-09-1 | El usuario ha marcado ítems como vistos | Las estadísticas reflejan el conteo correcto |
+| CA-09-2 | El usuario no tiene actividad aún | Las estadísticas muestran ceros sin errores |
+| CA-09-3 | El usuario actualiza su nombre de perfil | El cambio se refleja de inmediato en la pantalla |
+
+---
+
+### RF-10 — Pantalla Home con Tendencias
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-10 |
+| **Nombre** | Mostrar contenido en tendencia desde TMDB |
+| **Descripción** | La pantalla principal debe mostrar películas y series populares o en tendencia, obtenidas desde la API de TMDB, para que el usuario descubra nuevo contenido. |
+| **Prioridad** | Media |
+| **Entradas** | Apertura de la app por usuario autenticado |
+| **Proceso** | El sistema consulta el endpoint de tendencias de TMDB y renderiza los resultados. |
+| **Salida** | Carrusel o grilla de contenido en tendencia con poster y título. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-10-1 | El usuario abre la app con conexión a internet | Se carga el contenido en tendencia correctamente |
+| CA-10-2 | El usuario no tiene conexión a internet | Se muestra un mensaje de error y opción de reintentar |
+| CA-10-3 | El usuario presiona un ítem del Home | Navega a la pantalla de detalle de ese ítem |
+
+---
+
+## 3. Requisitos No Funcionales
+
+| ID | Requisito | Descripción |
+|---|---|---|
+| RNF-01 | Rendimiento | La app debe cargar resultados de búsqueda en menos de 3 segundos con conexión estable |
+| RNF-02 | Usabilidad | La navegación debe ser intuitiva y seguir los lineamientos de Material Design 3 |
+| RNF-03 | Persistencia | Los datos deben persistir entre sesiones usando Firestore |
+| RNF-04 | Seguridad | Las contraseñas son gestionadas exclusivamente por Firebase Auth |
+| RNF-05 | Compatibilidad | La aplicación debe funcionar en Android 8.0 (API 26) o superior |
+| RNF-06 | Disponibilidad | La aplicación debe estar disponible siempre que exista conexión a internet y los servicios de Firebase estén activos |
+| RNF-07 | Escalabilidad | El sistema debe permitir agregar nuevas funcionalidades sin afectar las existentes |
+| RNF-08 | Mantenibilidad | El código debe estar estructurado siguiendo arquitectura MVVM |
+| RNF-09 | Interfaz | La interfaz debe adaptarse a diferentes tamaños de pantalla |
+| RNF-10 | Confiabilidad | La aplicación no debe cerrarse inesperadamente durante el uso normal |
