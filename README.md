@@ -18,12 +18,11 @@ El usuario puede buscar cualquier película o serie, ver su info detallada, y or
 
 **Autenticación**
 - Registro e inicio de sesión con Firebase Auth
-- Perfil básico del usuario (foto, nombre, bio corta)
+- Perfil básico del usuario (foto, nombre, correo)
 
 **Exploración**
 - Búsqueda de películas/series en tiempo real con TMDB
 - Ver detalle: sinopsis, reparto, trailer (YouTube), género, año, rating global
-- Paleta de colores dinámica generada desde el poster (con la librería Palette de Android)
 
 **Listas personales**
 - Ver más tarde
@@ -48,16 +47,14 @@ El usuario puede buscar cualquier película o serie, ver su info detallada, y or
 | Lenguaje | Kotlin |
 | UI | Jetpack Compose |
 | Arquitectura | MVVM |
-| API | TMDB API (gratis) |
-| Base de datos local | Room |
+| API | TMDB API |
+| Base de datos | Firestore |
 | Auth | Firebase Auth |
-| Imágenes | Coil |
 | Navegación | Navigation Compose |
-| Red | Retrofit + OkHttp |
 
 ---
 
-### Pantallas aproximadas
+### Pantallas
 
 1. **Splash / Onboarding**
 2. **Login / Registro**
