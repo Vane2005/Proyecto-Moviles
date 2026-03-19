@@ -1,4 +1,12 @@
+# Proyecto - Desarrollo de aplicaciones para dispositivos móviles
+**Integrantes**
+- Vanessa Durán Mona 2359394
+- Alejandra Osorio Giraldo 2266128
+- David Mármol Otero 2266370
+- Alejandro Garzón Mayorga 2266088
+
 # Especificación de Requisitos de Software
+
 ## CineLog — Aplicación Móvil de Seguimiento de Películas y Series
 **Norma:** IEEE 830
 **Versión:** 1.0
@@ -33,6 +41,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-01 |
 | **Nombre** | Registro de nuevo usuario |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe permitir que un nuevo usuario cree una cuenta mediante correo electrónico y contraseña usando Firebase Authentication. |
 | **Prioridad** | Alta |
 | **Entradas** | Nombre, correo electrónico, contraseña |
@@ -56,6 +65,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-02 |
 | **Nombre** | Inicio de sesión de usuario existente |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe permitir que un usuario registrado inicie sesión con su correo y contraseña. |
 | **Prioridad** | Alta |
 | **Entradas** | Correo electrónico, contraseña |
@@ -79,6 +89,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-03 |
 | **Nombre** | Cierre de sesión |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe permitir que el usuario autenticado cierre su sesión activa. |
 | **Prioridad** | Media |
 | **Entradas** | Acción del usuario desde la pantalla de Perfil |
@@ -100,6 +111,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-04 |
 | **Nombre** | Búsqueda de contenido en TMDB |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe permitir al usuario buscar películas y series por título, consultando la API de TMDB en tiempo real. |
 | **Prioridad** | Alta |
 | **Entradas** | Texto ingresado en la barra de búsqueda |
@@ -123,6 +135,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-05 |
 | **Nombre** | Ver detalle de película o serie |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe mostrar información detallada de un ítem seleccionado, incluyendo datos obtenidos de la API de TMDB. |
 | **Prioridad** | Alta |
 | **Entradas** | Selección de un ítem desde los resultados de búsqueda o desde una lista personal |
@@ -145,6 +158,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-06 |
 | **Nombre** | Agregar y eliminar contenido de listas personales |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe permitir al usuario organizar películas y series en tres listas: **Ver más tarde**, **Favoritas** y **Ya visto**. Un mismo ítem puede estar en más de una lista. |
 | **Prioridad** | Alta |
 | **Entradas** | Acción del usuario sobre los botones de lista en la pantalla de detalle |
@@ -168,6 +182,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-07 |
 | **Nombre** | Registrar reseña personal y calificación |
+| **Rol** | Usuario |
 | **Descripción** | Cuando un usuario marca un ítem como "Ya visto", el sistema debe permitirle registrar una calificación del 1 al 5 y una reseña personal opcional. |
 | **Prioridad** | Alta |
 | **Entradas** | Calificación (1–5 estrellas), texto de reseña (opcional), fecha (automática) |
@@ -191,6 +206,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-08 |
 | **Nombre** | Visualizar listas personales del usuario |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe mostrar una pantalla donde el usuario pueda navegar entre sus tres listas y ver los ítems guardados en cada una. |
 | **Prioridad** | Alta |
 | **Entradas** | Navegación del usuario hacia la sección "Mis Listas" |
@@ -213,6 +229,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-09 |
 | **Nombre** | Ver perfil y estadísticas personales |
+| **Rol** | Usuario |
 | **Descripción** | El sistema debe mostrar al usuario su perfil básico junto con estadísticas derivadas de su actividad en la app. |
 | **Prioridad** | Media |
 | **Entradas** | Navegación del usuario hacia la sección "Perfil" |
@@ -235,6 +252,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 |---|---|
 | **ID** | RF-10 |
 | **Nombre** | Mostrar contenido en tendencia desde TMDB |
+| **Rol** | Usuario |
 | **Descripción** | La pantalla principal debe mostrar películas y series populares o en tendencia, obtenidas desde la API de TMDB, para que el usuario descubra nuevo contenido. |
 | **Prioridad** | Media |
 | **Entradas** | Apertura de la app por usuario autenticado |
