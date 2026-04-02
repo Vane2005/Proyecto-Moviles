@@ -13,7 +13,6 @@
 **Fecha:** 2026
 **Docente:** Miguel Askar
 
----
 
 ## 1. Introducción
 
@@ -42,9 +41,9 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 | **ID** | RF-01 |
 | **Nombre** | Registro de nuevo usuario |
 | **Rol** | Usuario |
-| **Descripción** | El sistema debe permitir que un nuevo usuario cree una cuenta mediante correo electrónico y contraseña usando Firebase Authentication. |
+| **Descripción** | El sistema debe permitir que un nuevo usuario cree una cuenta mediante nombre, edad, correo electrónico y contraseña usando Firebase Authentication. |
 | **Prioridad** | Alta |
-| **Entradas** | Nombre, correo electrónico, contraseña |
+| **Entradas** | Nombre, edad, correo electrónico, contraseña |
 | **Proceso** | El sistema valida el formato del correo y la fortaleza de la contraseña, luego crea la cuenta en Firebase Auth y almacena el perfil básico. |
 | **Salida** | Cuenta creada y sesión iniciada automáticamente. El usuario es redirigido a la pantalla principal (Home). |
 
@@ -140,7 +139,7 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 | **Prioridad** | Alta |
 | **Entradas** | Selección de un ítem desde los resultados de búsqueda o desde una lista personal |
 | **Proceso** | El sistema consulta el endpoint de detalle en TMDB y renderiza la información en pantalla. |
-| **Salida** | Pantalla de detalle con: poster, título, sinopsis, género(s), año, calificación global y botones para agregar a listas. |
+| **Salida** | Pantalla de detalle con: poster, título, sinopsis, género(s), año, calificación global y botones para agregar a cualquiera de sus listas personales (ya visto, favoritas, ver más tarde). |
 
 **Criterios de Aceptación:**
 
@@ -207,11 +206,11 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 | **ID** | RF-08 |
 | **Nombre** | Visualizar listas personales del usuario |
 | **Rol** | Usuario |
-| **Descripción** | El sistema debe mostrar una pantalla donde el usuario pueda navegar entre sus tres listas y ver los ítems guardados en cada una. |
+| **Descripción** | El sistema debe mostrar una pantalla donde el usuario pueda navegar entre sus tres listas y ver los ítems guardados en cada una, mediante secciones. |
 | **Prioridad** | Alta |
 | **Entradas** | Navegación del usuario hacia la sección "Mis Listas" |
 | **Proceso** | El sistema consulta Firestore y carga los ítems de cada lista para el usuario autenticado. |
-| **Salida** | Pantalla con tabs o secciones para cada lista, mostrando poster y título de cada ítem. |
+| **Salida** | Pantalla con secciones para cada lista, mostrando poster de cada ítem. |
 
 **Criterios de Aceptación:**
 
@@ -223,49 +222,74 @@ CineLog es una aplicación móvil Android que permite a los usuarios buscar pel�
 
 ---
 
-### RF-09 — Pantalla de Perfil y Estadísticas
+### RF-09 — Pantalla de Perfil de Usuario
 
 | Campo | Descripción |
 |---|---|
 | **ID** | RF-09 |
-| **Nombre** | Ver perfil y estadísticas personales |
+| **Nombre** | Ver y gestionar perfil de usuario |
 | **Rol** | Usuario |
-| **Descripción** | El sistema debe mostrar al usuario su perfil básico junto con estadísticas derivadas de su actividad en la app. |
+| **Descripción** | El sistema debe mostrar al usuario su foto de perfil, nombre, y permitirle acceder a las opciones de gestión de cuenta desde una pantalla centralizada. |
 | **Prioridad** | Media |
-| **Entradas** | Navegación del usuario hacia la sección "Perfil" |
-| **Proceso** | El sistema calcula las estadísticas a partir de los datos almacenados en Firestore. |
-| **Salida** | Nombre del usuario, foto de perfil, cantidad de ítems vistos, cantidad en watchlist y géneros más vistos. |
+| **Entradas** | Navegación del usuario hacia la sección "Mi cuenta" |
+| **Proceso** | El sistema recupera los datos del usuario autenticado desde Firestore y renderiza las opciones disponibles. |
+| **Salida** | Nombre del usuario, foto de perfil y opciones de navegación: Mis reseñas, Editar perfil, Estadísticas y Cerrar sesión. |
 
 **Criterios de Aceptación:**
 
 | ID | Criterio | Resultado Esperado |
 |---|---|---|
-| CA-09-1 | El usuario ha marcado ítems como vistos | Las estadísticas reflejan el conteo correcto |
-| CA-09-2 | El usuario no tiene actividad aún | Las estadísticas muestran ceros sin errores |
-| CA-09-3 | El usuario actualiza su nombre de perfil | El cambio se refleja de inmediato en la pantalla |
+| CA-09-1 | El usuario navega a "Mi cuenta" | Se muestra su nombre, foto de perfil y las cuatro opciones del menú |
+| CA-09-2 | El usuario pulsa "Editar perfil" | Se navega a la pantalla de edición de perfil |
+| CA-09-3 | El usuario pulsa "Mis reseñas" | Se navega a la pantalla con sus reseñas |
+| CA-09-4 | El usuario pulsa "Estadísticas" | Se navega a la pantalla de estadísticas |
+| CA-09-5 | El usuario pulsa "Cerrar sesión" | La sesión se cierra y se redirige a la pantalla de inicio/login |
 
 ---
 
-### RF-10 — Pantalla Home con Tendencias
+### RF-10 — Pantalla de Estadísticas
 
 | Campo | Descripción |
 |---|---|
 | **ID** | RF-10 |
-| **Nombre** | Mostrar contenido en tendencia desde TMDB |
+| **Nombre** | Ver estadísticas personales de actividad |
 | **Rol** | Usuario |
-| **Descripción** | La pantalla principal debe mostrar películas y series populares o en tendencia, obtenidas desde la API de TMDB, para que el usuario descubra nuevo contenido. |
+| **Descripción** | El sistema debe mostrar al usuario estadísticas derivadas de su actividad en la app, incluyendo historial reciente, géneros más vistos y cantidad de ítems por lista. |
 | **Prioridad** | Media |
-| **Entradas** | Apertura de la app por usuario autenticado |
-| **Proceso** | El sistema consulta el endpoint de tendencias de TMDB y renderiza los resultados. |
-| **Salida** | Carrusel o grilla de contenido en tendencia con poster y título. |
+| **Entradas** | Navegación del usuario hacia la sección "Estadísticas" desde el perfil |
+| **Proceso** | El sistema calcula las estadísticas a partir de los datos almacenados en Firestore asociados al usuario autenticado, los géneros más vistos se calcularán con los ítems marcados como "Vistos", se toman todas las películas/series en la lista Vistas y se cuentan los géneros que más se repiten entre ellas. |
+| **Salida** | Historial de películas/series recientes, géneros más vistos (etiquetas) y conteo de ítems en las listas: Vistas, Ver más tarde y Favoritas. |
 
 **Criterios de Aceptación:**
 
 | ID | Criterio | Resultado Esperado |
 |---|---|---|
-| CA-10-1 | El usuario abre la app con conexión a internet | Se carga el contenido en tendencia correctamente |
-| CA-10-2 | El usuario no tiene conexión a internet | Se muestra un mensaje de error y opción de reintentar |
-| CA-10-3 | El usuario presiona un ítem del Home | Navega a la pantalla de detalle de ese ítem |
+| CA-10-1 | El usuario tiene actividad registrada | Se muestran las últimas películas vistas, géneros y conteos correctos por lista |
+| CA-10-2 | El usuario no tiene actividad aún | Las estadísticas muestran ceros y el historial aparece vacío, sin errores |
+| CA-10-3 | El usuario ha marcado ítems como favoritos | El contador de "Favoritas" refleja el número correcto |
+
+---
+
+### RF-11 — Pantalla Home con Tendencias
+
+| Campo | Descripción |
+|---|---|
+| **ID** | RF-11 |
+| **Nombre** | Mostrar contenido en tendencia desde TMDB |
+| **Rol** | Usuario |
+| **Descripción** | La pantalla principal debe mostrar películas y series en tendencia, obtenidas desde la API de TMDB, para que el usuario descubra nuevo contenido. |
+| **Prioridad** | Media |
+| **Entradas** | Apertura de la app por usuario autenticado |
+| **Proceso** | El sistema consulta el endpoint de tendencias de TMDB y renderiza los resultados. |
+| **Salida** | Carrusel de contenido en tendencia con poster. |
+
+**Criterios de Aceptación:**
+
+| ID | Criterio | Resultado Esperado |
+|---|---|---|
+| CA-11-1 | El usuario abre la app con conexión a internet | Se carga el contenido en tendencia correctamente |
+| CA-11-2 | El usuario no tiene conexión a internet | Se muestra un mensaje de error y opción de reintentar |
+| CA-11-3 | El usuario presiona un ítem del Home | Navega a la pantalla de detalle de ese ítem |
 
 ---
 
