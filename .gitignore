@@ -1,5 +1,14 @@
-# Created by https://www.toptal.com/developers/gitignore/api/androidstudio,gradle,kotlin
-# Edit at https://www.toptal.com/developers/gitignore?templates=androidstudio,gradle,kotlin
+# Created by https://www.toptal.com/developers/gitignore/api/androidstudio,gradle,kotlin,firebase
+# Edit at https://www.toptal.com/developers/gitignore?templates=androidstudio,gradle,kotlin,firebase
+
+### Firebase ###
+.idea
+**/node_modules/*
+**/.firebaserc
+
+### Firebase Patch ###
+.runtimeconfig.json
+.firebase/
 
 ### Kotlin ###
 # Compiled class file
@@ -177,4 +186,4 @@ fabric.properties
 
 !/gradle/wrapper/gradle-wrapper.jar
 
-# End of https://www.toptal.com/developers/gitignore/api/androidstudio,gradle,kotlin
+# End of https://www.toptal.com/developers/gitignore/api/androidstudio,gradle,kotlin,firebase
