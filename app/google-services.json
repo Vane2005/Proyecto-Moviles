@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1093288959000",
+    "project_id": "aplicaciones-moviles-baf61",
+    "storage_bucket": "aplicaciones-moviles-baf61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1093288959000:android:0e994d57d85f4d61ca776d",
+        "android_client_info": {
+          "package_name": "com.example.cinelog"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlTv2MrlbY7-AwBOeTtZ9Fp6EUYKD7m1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
