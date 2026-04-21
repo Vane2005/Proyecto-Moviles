@@ -17,8 +17,8 @@ class LoginViewModel(
     private val _uiState = MutableStateFlow(LoginState())
     val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
-    fun onUsernameChange(value: String) {
-        _uiState.update { it.copy(username = value, errorMessage = null) }
+    fun onEmailChange(value: String) {
+        _uiState.update { it.copy(email = value, errorMessage = null) }
     }
 
     fun onPasswordChange(value: String) {
@@ -27,13 +27,13 @@ class LoginViewModel(
 
     fun onLoginClick() {
         val state = _uiState.value
-        if (state.username.isBlank() || state.password.isBlank()) {
+        if (state.email.isBlank() || state.password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Por favor completa todos los campos") }
             return
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            authRepository.login(state.username, state.password)
+            authRepository.login(state.email, state.password)
                 .onSuccess {
                     _uiState.update { it.copy(isLoading = false, isLoginSuccessful = true) }
                 }
