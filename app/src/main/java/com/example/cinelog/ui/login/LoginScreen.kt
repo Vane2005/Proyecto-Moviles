@@ -86,11 +86,11 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // Campo Usuario
+                    // Campo Email
                     OutlinedTextField(
-                        value = uiState.username,
-                        onValueChange = viewModel::onUsernameChange,
-                        placeholder = { Text("Usuario", color = Color.Gray) },
+                        value = uiState.email,
+                        onValueChange = viewModel::onEmailChange,
+                        placeholder = { Text("Email", color = Color.Gray) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Person,

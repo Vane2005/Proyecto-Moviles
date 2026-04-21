@@ -10,11 +10,12 @@ class AuthRepository {
     private val auth = FirebaseAuth.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
-    suspend fun login(username: String, password: String): Result<Boolean> {
-        return if (username.isNotEmpty() && password.isNotEmpty()) {
+    suspend fun login(email: String, password: String): Result<Boolean> {
+        return try {
+            auth.signInWithEmailAndPassword(email, password).await()
             Result.success(true)
-        } else {
-            Result.failure(Exception("Credenciales inválidas"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
