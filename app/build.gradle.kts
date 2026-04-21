@@ -17,6 +17,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "TMDB_API_KEY",
+            "\"${project.findProperty("TMDB_API_KEY")}\""
+        )
     }
 
     buildTypes {
@@ -38,6 +44,9 @@ android {
     buildFeatures {
         compose = true
     }
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -57,12 +66,23 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+
     // collectAsStateWithLifecycle (usado en LoginScreen)
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation(platform("com.google.firebase:firebase-bom:34.12.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+
+    // Retrofit - cliente HTTP
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+
+    // Gson converter - convierte el JSON de TMDB a objetos Kotlin
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // OkHttp logging - para ver las peticiones en Logcat (util para debug)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }
