@@ -28,4 +28,7 @@ object RetrofitClient {
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
+
+    val tmdbApiService: TmdbApiService = retrofit.create(TmdbApiService::class.java)
+
 }
