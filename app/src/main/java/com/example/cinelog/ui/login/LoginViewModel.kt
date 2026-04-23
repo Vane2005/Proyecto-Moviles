@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.util.Patterns
 
 class LoginViewModel(
     private val authRepository: AuthRepository = AuthRepository()
@@ -16,6 +17,9 @@ class LoginViewModel(
 
     private val _uiState = MutableStateFlow(LoginState())
     val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
+
+    private fun isValidEmail(email: String): Boolean =
+        Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 
     fun onEmailChange(value: String) {
         _uiState.update { it.copy(email = value, errorMessage = null) }
@@ -31,6 +35,18 @@ class LoginViewModel(
             _uiState.update { it.copy(errorMessage = "Por favor completa todos los campos") }
             return
         }
+
+        val email = state.email.trim()
+        if (!isValidEmail(email)) {
+            _uiState.update { it.copy(errorMessage = "Ingresa un correo válido") }
+            return
+        }
+
+        if (state.password.length < 6) {
+            _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             authRepository.login(state.email, state.password)

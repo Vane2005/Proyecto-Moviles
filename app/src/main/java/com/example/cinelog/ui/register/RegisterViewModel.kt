@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.util.Patterns
 
 class RegisterViewModel(
     private val authRepository: AuthRepository = AuthRepository()
@@ -16,6 +17,9 @@ class RegisterViewModel(
 
     private val _uiState = MutableStateFlow(RegisterState())
     val uiState: StateFlow<RegisterState> = _uiState.asStateFlow()
+
+    private fun isValidEmail(email: String): Boolean =
+        Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
 
     fun onNombreChange(value: String) {
         _uiState.update { it.copy(nombre = value, errorMessage = null) }
@@ -44,6 +48,17 @@ class RegisterViewModel(
         if (state.nombre.isBlank() || state.edad.isBlank() ||
             state.email.isBlank() || state.password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Completa todos los campos") }
+            return
+        }
+
+        val email = state.email.trim()
+        if (!isValidEmail(email)) {
+            _uiState.update { it.copy(errorMessage = "Ingresa un correo válido") }
+            return
+        }
+
+        if (state.password.length < 6) {
+            _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
             return
         }
 
