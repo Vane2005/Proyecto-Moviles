@@ -85,4 +85,7 @@ dependencies {
 
     // OkHttp logging - para ver las peticiones en Logcat (util para debug)
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Navigation Compose - para la navegación entre pantallas
+    implementation("androidx.navigation:navigation-compose:2.8.4")
 }
