@@ -1,4 +1,4 @@
-package com.example.cinelog.ui.Home
+package com.example.cinelog.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

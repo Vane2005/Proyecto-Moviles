@@ -16,10 +16,19 @@ object RetrofitClient {
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor { chain ->
-            val request = chain.request().newBuilder()
-                .addHeader("Authorization", "Bearer ${BuildConfig.TMDB_API_KEY}")
+
+            val originalRequest = chain.request()
+            val originalUrl = originalRequest.url
+
+            val newUrl = originalUrl.newBuilder()
+                .addQueryParameter("api_key", BuildConfig.TMDB_API_KEY)
+                .addQueryParameter("language", "es-Es")
                 .build()
-            chain.proceed(request)
+            val newRequest = originalRequest.newBuilder()
+                .url(newUrl)
+                .build()
+
+            chain.proceed(newRequest)
         }
         .build()
 

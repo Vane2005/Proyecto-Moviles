@@ -15,8 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.cinelog.ui.home.HomeScreen
 import com.example.cinelog.ui.login.LoginScreen
 import com.google.firebase.auth.FirebaseAuth
+
 
 private const val ROUTE_LOGIN = "login"
 private const val ROUTE_HOME = "home"
@@ -56,9 +58,7 @@ fun CinelogApp() {
             LoginScreen()
         }
         composable(ROUTE_HOME) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Home() — aca debe de ir el llamado a la pantalla de home")
-            }
+            HomeScreen()
         }
     }
 }

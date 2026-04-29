@@ -7,14 +7,11 @@ import retrofit2.http.Query
 interface TmdbApiService {
 
     @GET("trending/movie/week")
-    suspend fun getTrendingMovies(
-        @Query("language") language: String = "es-ES"
-    ): MovieResponse
+    suspend fun getTrendingMovies(): MovieResponse
 
     @GET("discover/movie")
     suspend fun getMoviesByGenre(
-        @Query("with_genres") genreId: Int,
-        @Query("language") language: String = "es-ES",
+        @Query("with_genres") genreID: Int,
         @Query("sort_by") sortBy: String = "popularity.desc"
     ): MovieResponse
 }
