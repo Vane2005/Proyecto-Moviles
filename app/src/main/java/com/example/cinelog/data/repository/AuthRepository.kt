@@ -37,6 +37,17 @@ class AuthRepository {
         }
     }
 
+    suspend fun getUserProfile(uid: String): Result<User> {
+        return try {
+            val document = firestore.collection("users").document(uid).get().await()
+            val user = document.toObject(User::class.java)
+                ?: return Result.failure(Exception("Usuario no encontrado"))
+            Result.success(user)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun signOut() {
         auth.signOut()
     }
