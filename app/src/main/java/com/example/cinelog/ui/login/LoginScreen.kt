@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-val DarkBackground = Color(0xFF1A1F2E)
-val CardBackground = Color(0xFFE8E8E8)
-val PrimaryButton = Color(0xFF1A1F2E)
-val TextFieldBg = Color(0xFFFFFFFF)
+// Definición de paleta de colores para el sistema de diseño
+private val ColorBackground = Color(0xFF0F172A)
+private val ColorSurface = Color(0xFFE2E8F0)
+private val ColorPrimary = Color(0xFF0F172A)
+private val ColorOnSurface = Color(0xFF1E293B)
+private val ColorInputBackground = Color(0xFFFFFFFF)
 
 @Composable
 fun LoginScreen(
@@ -36,141 +38,113 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(DarkBackground)
+            .background(ColorBackground)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 28.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 32.dp),
+            horizontalAlignment = Alignment.Start
         ) {
-            // Header
-            Column(
-                modifier = Modifier.padding(top = 64.dp)
-            ) {
-                Text(
-                    text = "¡Bienvenido!",
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = "Disfruta de nuestra app",
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 14.sp
-                )
-            }
+            Spacer(modifier = Modifier.height(80.dp))
 
-            // Card de login
+            // Cabecera de bienvenida
+            Text(
+                text = "¡Bienvenido!",
+                color = Color.White,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = (-0.5).sp
+            )
+            Text(
+                text = "Disfruta de nuestra app",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Light
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Contenedor principal de formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 48.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(containerColor = ColorSurface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 32.dp),
+                        .padding(horizontal = 24.dp, vertical = 40.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Iniciar sesion",
-                        fontSize = 22.sp,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF1A1F2E)
+                        color = ColorOnSurface
                     )
 
-                    Spacer(modifier = Modifier.height(28.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                    // Campo Email
-                    OutlinedTextField(
+                    // Campo de entrada: Usuario / Email
+                    LoginInputField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChange,
-                        placeholder = { Text("Email", color = Color.Gray) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = null,
-                                tint = Color.Gray
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = TextFieldBg,
-                            unfocusedContainerColor = TextFieldBg,
-                            focusedBorderColor = Color(0xFF1A1F2E),
-                            unfocusedBorderColor = Color.Transparent
-                        ),
-                        singleLine = true
+                        placeholder = "Usuario",
+                        leadingIcon = Icons.Default.Person
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Campo Contraseña
-                    OutlinedTextField(
+                    // Campo de entrada: Contraseña
+                    LoginInputField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChange,
-                        placeholder = { Text("Contraseña", color = Color.Gray) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                tint = Color.Gray
-                            )
-                        },
-                        visualTransformation = PasswordVisualTransformation(),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = TextFieldBg,
-                            unfocusedContainerColor = TextFieldBg,
-                            focusedBorderColor = Color(0xFF1A1F2E),
-                            unfocusedBorderColor = Color.Transparent
-                        ),
-                        singleLine = true
+                        placeholder = "Contraseña",
+                        leadingIcon = Icons.Default.Lock,
+                        isPassword = true
                     )
 
-                    // Olvidaste contraseña
+                    // Opción: Recuperar contraseña
                     Box(modifier = Modifier.fillMaxWidth()) {
                         TextButton(
-                            onClick = { /* TODO */ },
-                            modifier = Modifier.align(Alignment.CenterEnd)
+                            onClick = { /* Implementación futura */ },
+                            modifier = Modifier.align(Alignment.CenterEnd),
+                            contentPadding = PaddingValues(0.dp)
                         ) {
                             Text(
                                 text = "¿Olvidaste tu contraseña?",
-                                color = Color(0xFF555555),
-                                fontSize = 12.sp
+                                color = ColorOnSurface.copy(alpha = 0.7f),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
 
-                    // Error message
+                    // Visualización de errores de validación o servicio
                     if (uiState.errorMessage != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = uiState.errorMessage!!,
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botón iniciar sesión
+                    // Acción principal: Inicio de sesión
                     Button(
                         onClick = viewModel::onLoginClick,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryButton),
+                            .width(180.dp)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) {
@@ -184,23 +158,67 @@ fun LoginScreen(
                                 text = "Iniciar sesion",
                                 color = Color.White,
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    // Registrarse
+                    // Navegación hacia registro
                     TextButton(onClick = onNavigateToRegister) {
                         Text(
                             text = "Registrarse",
-                            color = Color(0xFF555555),
-                            fontSize = 14.sp
+                            color = ColorOnSurface,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun LoginInputField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    isPassword: Boolean = false
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(placeholder, color = Color.Gray.copy(alpha = 0.6f)) },
+        leadingIcon = {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(22.dp)
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true,
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+        keyboardOptions = if (isPassword) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions.Default,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = ColorInputBackground,
+            unfocusedContainerColor = ColorInputBackground,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            focusedTextColor = Color.Black,
+            unfocusedTextColor = Color.Black,
+            cursorColor = ColorPrimary
+        )
+    )
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showSystemUi = true)
+@Composable
+fun LoginScreenPreview() {
+    LoginScreen()
 }
