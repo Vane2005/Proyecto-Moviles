@@ -1,6 +1,8 @@
 package com.example.cinelog.data.repository
 
 import com.example.cinelog.data.model.Movie
+import com.example.cinelog.data.model.MovieDetail
+import com.example.cinelog.data.model.TvDetail
 import com.example.cinelog.data.network.RetrofitClient
 
 class MovieRepository {
@@ -20,6 +22,22 @@ class MovieRepository {
         return try {
             val response = api.getMoviesByGenre(genreId)
             Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getMovieDetail(id: Int): Result<MovieDetail> {
+        return try {
+            Result.success(api.getMovieDetail(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getTvDetail(id: Int): Result<TvDetail> {
+        return try {
+            Result.success(api.getTvDetail(id))
         } catch (e: Exception) {
             Result.failure(e)
         }
