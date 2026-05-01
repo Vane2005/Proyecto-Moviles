@@ -54,6 +54,12 @@ class UserListViewModel(
     }
 
     fun removeFromList(movie: MovieItem, listType: ListType) {
-        TODO("Por implementar")
+        viewModelScope.launch {
+            userListRepository.removeMovieFromList(movie, listType)
+                .onSuccess { loadAllLists() }
+                .onFailure { e ->
+                    _uiState.update { it.copy(errorMessage = e.message) }
+                }
+        }
     }
 }
