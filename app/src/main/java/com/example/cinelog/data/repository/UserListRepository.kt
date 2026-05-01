@@ -36,7 +36,15 @@ class UserListRepository {
     }
 
     suspend fun removeMovieFromList(movie: MovieItem, listType: ListType): Result<Boolean> {
-        TODO("Por implementar")
+        return try {
+            val doc = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            doc.update(getListName(listType), FieldValue.arrayRemove(movie)).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun getMoviesFromList(listType: ListType): Result<List<MovieItem>> {
