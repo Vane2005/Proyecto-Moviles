@@ -30,12 +30,6 @@ class AuthRepository {
             val user = User(uid = uid, nombre = nombre, edad = edad, email = email)
             firestore.collection("users").document(uid).set(user).await()
 
-            // inicializar las listas vacías
-            val listsRef = firestore.collection("users").document(uid).collection("lists")
-            listsRef.document("watchlist").set(mapOf("creada" to true)).await()
-            listsRef.document("favoritas").set(mapOf("creada" to true)).await()
-            listsRef.document("yaVisto").set(mapOf("creada" to true)).await()
-
             Result.success(true)
 
         } catch (e: Exception) {
