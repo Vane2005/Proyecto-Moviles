@@ -1,9 +1,11 @@
 package com.example.cinelog.data.repository
 
+import com.example.cinelog.data.model.MovieItem
 import com.example.cinelog.domain.model.ListType
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class UserListRepository {
 
