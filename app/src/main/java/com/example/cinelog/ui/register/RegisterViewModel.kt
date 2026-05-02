@@ -44,7 +44,6 @@ class RegisterViewModel(
     fun onRegisterClick() {
         val state = _uiState.value
 
-        // Validaciones
         if (state.nombre.isBlank() || state.edad.isBlank() ||
             state.email.isBlank() || state.password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Completa todos los campos") }
@@ -64,12 +63,12 @@ class RegisterViewModel(
 
         val edad = state.edad.toIntOrNull()
         if (edad == null || edad <= 0) {
-            _uiState.update { it.copy(errorMessage = "Ingresa una edad valida") }
+            _uiState.update { it.copy(errorMessage = "Ingresa una edad válida") }
             return
         }
 
         if (state.password != state.confirmPassword) {
-            _uiState.update { it.copy(errorMessage = "Las contrasenas no coinciden") }
+            _uiState.update { it.copy(errorMessage = "Las contraseñas no coinciden") }
             return
         }
 
@@ -77,6 +76,9 @@ class RegisterViewModel(
             _uiState.update { it.copy(isLoading = true) }
             authRepository.register(state.nombre, edad, state.email, state.password)
                 .onSuccess {
+                    // Cerramos sesión inmediatamente. 
+                    // Ya no necesitamos delay porque la navegación es explícita en CinelogApp.
+                    authRepository.signOut()
                     _uiState.update { it.copy(isLoading = false, isRegisterSuccessful = true) }
                 }
                 .onFailure { e ->

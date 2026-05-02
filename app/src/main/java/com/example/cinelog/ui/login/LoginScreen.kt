@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,25 +20,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-// Definición de paleta de colores para el sistema de diseño
-private val ColorBackground = Color(0xFF0F172A)
-private val ColorSurface = Color(0xFFE2E8F0)
-private val ColorPrimary = Color(0xFF0F172A)
-private val ColorOnSurface = Color(0xFF1E293B)
-private val ColorInputBackground = Color(0xFFFFFFFF)
+import com.example.cinelog.ui.components.CineLogColors
 
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onNavigateToRegister: () -> Unit = {}
+    onNavigateToRegister: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {},
+    registrationSuccessMessage: String? = null
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // Navegar al Home solo cuando el login es exitoso explícitamente
+    LaunchedEffect(uiState.isLoginSuccessful) {
+        if (uiState.isLoginSuccessful) {
+            onNavigateToHome()
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ColorBackground)
+            .background(CineLogColors.Background)
     ) {
         Column(
             modifier = Modifier
@@ -48,7 +51,6 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(80.dp))
 
-            // Cabecera de bienvenida
             Text(
                 text = "¡Bienvenido!",
                 color = Color.White,
@@ -65,13 +67,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Contenedor principal de formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
                 shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = ColorSurface),
+                colors = CardDefaults.cardColors(containerColor = CineLogColors.Surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -81,25 +82,43 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Iniciar sesion",
+                        text = "Iniciar sesión",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = ColorOnSurface
+                        color = CineLogColors.SearchBar // Reutilizando color oscuro para texto sobre superficie clara
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Campo de entrada: Usuario / Email
+                    // Mensaje de éxito tras registro (Viene por navegación)
+                    if (registrationSuccessMessage != null) {
+                        Surface(
+                            color = CineLogColors.Success.copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                        ) {
+                            Text(
+                                text = registrationSuccessMessage,
+                                color = CineLogColors.Success,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    }
+
+                    // Campo: Correo electrónico
                     LoginInputField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChange,
-                        placeholder = "Usuario",
-                        leadingIcon = Icons.Default.Person
+                        placeholder = "Correo electrónico",
+                        leadingIcon = Icons.Default.Email
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Campo de entrada: Contraseña
+                    // Campo: Contraseña
                     LoginInputField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChange,
@@ -108,7 +127,7 @@ fun LoginScreen(
                         isPassword = true
                     )
 
-                    // Opción: Recuperar contraseña
+                    // Opción: Olvidé mi contraseña
                     Box(modifier = Modifier.fillMaxWidth()) {
                         TextButton(
                             onClick = { /* Implementación futura */ },
@@ -117,14 +136,13 @@ fun LoginScreen(
                         ) {
                             Text(
                                 text = "¿Olvidaste tu contraseña?",
-                                color = ColorOnSurface.copy(alpha = 0.7f),
+                                color = CineLogColors.SearchBar.copy(alpha = 0.7f),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium
                             )
                         }
                     }
 
-                    // Visualización de errores de validación o servicio
                     if (uiState.errorMessage != null) {
                         Text(
                             text = uiState.errorMessage!!,
@@ -137,39 +155,28 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Acción principal: Inicio de sesión
                     Button(
                         onClick = viewModel::onLoginClick,
                         modifier = Modifier
-                            .width(180.dp)
+                            .width(200.dp)
                             .height(52.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
+                        colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Background),
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Text(
-                                text = "Iniciar sesion",
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("Ingresar", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Navegación hacia registro
                     TextButton(onClick = onNavigateToRegister) {
                         Text(
-                            text = "Registrarse",
-                            color = ColorOnSurface,
+                            text = "¿No tienes cuenta? Regístrate",
+                            color = CineLogColors.SearchBar,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -193,12 +200,7 @@ fun LoginInputField(
         onValueChange = onValueChange,
         placeholder = { Text(placeholder, color = Color.Gray.copy(alpha = 0.6f)) },
         leadingIcon = {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                tint = Color.Gray,
-                modifier = Modifier.size(22.dp)
-            )
+            Icon(imageVector = leadingIcon, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(22.dp))
         },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -206,19 +208,13 @@ fun LoginInputField(
         visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         keyboardOptions = if (isPassword) KeyboardOptions(keyboardType = KeyboardType.Password) else KeyboardOptions.Default,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = ColorInputBackground,
-            unfocusedContainerColor = ColorInputBackground,
+            focusedContainerColor = CineLogColors.InputBackground,
+            unfocusedContainerColor = CineLogColors.InputBackground,
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent,
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
-            cursorColor = ColorPrimary
+            cursorColor = CineLogColors.Background
         )
     )
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showSystemUi = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen()
 }

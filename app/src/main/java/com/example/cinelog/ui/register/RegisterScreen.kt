@@ -24,26 +24,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-// Sistema de diseño (Consistente con LoginScreen)
-private val ColorBackground = Color(0xFF0F172A)
-private val ColorSurface = Color(0xFFE2E8F0)
-private val ColorPrimary = Color(0xFF0F172A)
-private val ColorOnSurface = Color(0xFF1E293B)
-private val ColorInputBackground = Color(0xFFFFFFFF)
+import com.example.cinelog.ui.components.CineLogColors
 
 @Composable
 fun RegisterScreen(
     viewModel: RegisterViewModel = viewModel(),
-    onNavigateToLogin: () -> Unit = {}
+    onNavigateToLogin: (String?) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(uiState.isRegisterSuccessful) {
+        if (uiState.isRegisterSuccessful) {
+            onNavigateToLogin("¡Cuenta creada con éxito! Ya puedes iniciar sesión.")
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ColorBackground)
+            .background(CineLogColors.Background)
     ) {
         Column(
             modifier = Modifier
@@ -54,7 +54,6 @@ fun RegisterScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Cabecera Principal
             Text(
                 text = "Crea tu cuenta",
                 color = Color.White,
@@ -71,14 +70,13 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Tarjeta de Formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .padding(bottom = 32.dp),
                 shape = RoundedCornerShape(32.dp),
-                colors = CardDefaults.cardColors(containerColor = ColorSurface),
+                colors = CardDefaults.cardColors(containerColor = CineLogColors.Surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -91,23 +89,21 @@ fun RegisterScreen(
                         text = "Registrarse",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = ColorOnSurface
+                        color = CineLogColors.SearchBar
                     )
 
                     Spacer(modifier = Modifier.height(28.dp))
 
-                    // Input: Correo Electrónico
                     RegisterInputField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChange,
-                        placeholder = "correo electronico",
+                        placeholder = "Correo electrónico",
                         leadingIcon = Icons.Default.Email,
                         keyboardType = KeyboardType.Email
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Input: Nombre de Usuario
                     RegisterInputField(
                         value = uiState.nombre,
                         onValueChange = viewModel::onNombreChange,
@@ -117,7 +113,6 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Input: Edad (Requerido por validación en ViewModel)
                     RegisterInputField(
                         value = uiState.edad,
                         onValueChange = viewModel::onEdadChange,
@@ -128,7 +123,6 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Input: Contraseña
                     RegisterInputField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChange,
@@ -139,7 +133,6 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Input: Confirmar Contraseña
                     RegisterInputField(
                         value = uiState.confirmPassword,
                         onValueChange = viewModel::onConfirmPasswordChange,
@@ -148,7 +141,6 @@ fun RegisterScreen(
                         isPassword = true
                     )
 
-                    // Área de Errores
                     if (uiState.errorMessage != null) {
                         Text(
                             text = uiState.errorMessage!!,
@@ -161,14 +153,13 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Botón Principal de Registro
                     Button(
                         onClick = viewModel::onRegisterClick,
                         modifier = Modifier
                             .width(180.dp)
                             .height(52.dp),
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = ColorPrimary),
+                        colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Background),
                         enabled = !uiState.isLoading
                     ) {
                         if (uiState.isLoading) {
@@ -189,11 +180,10 @@ fun RegisterScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Navegación de retorno
-                    TextButton(onClick = onNavigateToLogin) {
+                    TextButton(onClick = { onNavigateToLogin(null) }) {
                         Text(
-                            text = "Iniciar sesión",
-                            color = ColorOnSurface,
+                            text = "¿Ya tienes cuenta? Inicia sesión",
+                            color = CineLogColors.SearchBar,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -231,19 +221,13 @@ private fun RegisterInputField(
         visualTransformation = if (isPassword) PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedContainerColor = ColorInputBackground,
-            unfocusedContainerColor = ColorInputBackground,
+            focusedContainerColor = CineLogColors.InputBackground,
+            unfocusedContainerColor = CineLogColors.InputBackground,
             focusedBorderColor = Color.Transparent,
             unfocusedBorderColor = Color.Transparent,
             focusedTextColor = Color.Black,
             unfocusedTextColor = Color.Black,
-            cursorColor = ColorPrimary
+            cursorColor = CineLogColors.Background
         )
     )
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showSystemUi = true)
-@Composable
-fun RegisterScreenPreview() {
-    RegisterScreen()
 }
