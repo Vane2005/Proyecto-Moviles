@@ -107,7 +107,7 @@ fun RegisterScreen(
                     RegisterInputField(
                         value = uiState.nombre,
                         onValueChange = viewModel::onNombreChange,
-                        placeholder = "Usuario",
+                        placeholder = "Nombre",
                         leadingIcon = Icons.Default.Person
                     )
 
