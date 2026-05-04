@@ -6,14 +6,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -23,53 +19,43 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.cinelog.data.model.Movie
+import com.example.cinelog.ui.components.CineLogColors
+import com.example.cinelog.ui.components.CinelogBottomBar
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
 
-
-object CineLogColors {
-    val Background      = Color(0xFF0F172A)
-    val SearchBar       = Color(0xFF1E293B)
-    val SearchText      = Color(0xFF94A3B8)
-    val SectionTitle    = Color(0xFFF1F5F9)
-    val NavBar          = Color(0xFF1E293B)
-    val NavIconActive   = Color(0xFF60A5FA)
-    val NavIconInactive = Color(0xFF475569)
-}
-
-
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = CineLogColors.Background,
-        contentWindowInsets = WindowInsets.safeDrawing, //para que respete la zona segura
-        bottomBar = { BottomBar() }
+        contentWindowInsets = WindowInsets.safeDrawing,
+        bottomBar = { 
+            CinelogBottomBar(
+                currentRoute = "home",
+                onNavigateToHome = onNavigateToHome,
+                onNavigateToProfile = onNavigateToProfile
+            ) 
+        }
     ) { padding ->
-
-
-        println("Horror size: ${uiState.horrorMovies.size}")
-        println("Romance size: ${uiState.romanceMovies.size}")
-        println("Animation size: ${uiState.animationMovies.size}")
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-
             item {
-
                 SearchBar()
 
                 uiState.featuredMovie?.let {
                     FeaturedBanner(it)
                 }
-
 
                 SectionTitle("Terror")
                 MovieCarousel(uiState.horrorMovies)
@@ -88,9 +74,11 @@ fun HomeScreen(
 
 @Composable
 fun SearchBar() {
+    var query by remember { mutableStateOf("") }
+    
     OutlinedTextField(
-        value = "",
-        onValueChange = {},
+        value = query,
+        onValueChange = { query = it },
         placeholder = { Text("Buscar...", color = CineLogColors.SearchText) },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = CineLogColors.SearchText)
@@ -106,7 +94,8 @@ fun SearchBar() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(20.dp),
+        singleLine = true
     )
 }
 
@@ -141,8 +130,6 @@ fun SectionTitle(title: String) {
 
 @Composable
 fun MovieCarousel(movies: List<Movie>) {
-
-
     if (movies.isEmpty()) {
         Text(
             text = "No hay películas",
@@ -179,47 +166,6 @@ fun MovieCard(movie: Movie, width: Dp) {
             contentDescription = movie.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-fun BottomBar() {
-    NavigationBar(
-        containerColor = CineLogColors.NavBar
-    ) {
-
-        NavigationBarItem(
-            selected = true,
-            onClick = {},
-            icon = { Icon(Icons.Default.Home, null) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor   = CineLogColors.NavIconActive,
-                unselectedIconColor = CineLogColors.NavIconInactive,
-                indicatorColor      = CineLogColors.NavBar,
-            )
-        )
-
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor   = CineLogColors.NavIconActive,
-                unselectedIconColor = CineLogColors.NavIconInactive,
-                indicatorColor      = CineLogColors.NavBar,
-            )
-        )
-
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.Person, null) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor   = CineLogColors.NavIconActive,
-                unselectedIconColor = CineLogColors.NavIconInactive,
-                indicatorColor      = CineLogColors.NavBar,
-            )
         )
     }
 }

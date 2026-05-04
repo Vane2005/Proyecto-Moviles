@@ -41,4 +41,8 @@ class ProfileViewModel(
                 }
         }
     }
+
+    fun signOut() {
+        authRepository.signOut()
+    }
 }

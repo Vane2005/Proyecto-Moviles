@@ -1,80 +1,157 @@
 package com.example.cinelog.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.animation.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.home.HomeScreen
 import com.example.cinelog.ui.login.LoginScreen
+import com.example.cinelog.ui.profile.ProfileScreen
 import com.example.cinelog.ui.register.RegisterScreen
 import com.google.firebase.auth.FirebaseAuth
+import java.net.URLDecoder
+import java.net.URLEncoder
 
-// Constantes de navegación para evitar errores de escritura
-private const val ROUTE_LOGIN = "login"
+private const val ROUTE_LOGIN_BASE = "login"
+private const val ROUTE_LOGIN_FULL = "login?successMessage={successMessage}"
 private const val ROUTE_REGISTER = "register"
 private const val ROUTE_HOME = "home"
+private const val ROUTE_PROFILE = "profile"
+
+private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE)
 
 @Composable
 fun CinelogApp() {
     val auth = remember { FirebaseAuth.getInstance() }
-    var isLoggedIn by remember { mutableStateOf(auth.currentUser != null) }
+    val navController = rememberNavController()
+    
+    val density = LocalDensity.current
+    val moveOffset = with(density) { 30.dp.roundToPx() }
+    val animDuration = 400 
+    val easing = FastOutSlowInEasing
 
-    // Escucha cambios en el estado de autenticación de Firebase
-    DisposableEffect(Unit) {
+    val navigateToSection: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    DisposableEffect(navController) {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            isLoggedIn = firebaseAuth.currentUser != null
+            if (firebaseAuth.currentUser == null) {
+                val currentRoute = navController.currentDestination?.route
+                if (currentRoute != null && PROTECTED_ROUTES.any { currentRoute.startsWith(it) }) {
+                    navController.navigate(ROUTE_LOGIN_BASE) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            }
         }
         auth.addAuthStateListener(listener)
         onDispose { auth.removeAuthStateListener(listener) }
     }
 
-    val navController = rememberNavController()
-
-    // Redirección lógica basada en el estado de la sesión
-    LaunchedEffect(isLoggedIn) {
-        if (isLoggedIn) {
+    LaunchedEffect(Unit) {
+        if (auth.currentUser != null) {
             navController.navigate(ROUTE_HOME) {
                 popUpTo(0) { inclusive = true }
-            }
-        } else {
-            // Solo redirigir a login si no estamos ya en el flujo de registro
-            val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (currentRoute != ROUTE_REGISTER) {
-                navController.navigate(ROUTE_LOGIN) {
-                    popUpTo(0) { inclusive = true }
-                }
             }
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = if (isLoggedIn) ROUTE_HOME else ROUTE_LOGIN
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = CineLogColors.Background
     ) {
-        composable(ROUTE_LOGIN) {
-            LoginScreen(
-                onNavigateToRegister = { 
-                    navController.navigate(ROUTE_REGISTER) 
-                }
-            )
-        }
-        
-        composable(ROUTE_REGISTER) {
-            RegisterScreen(
-                onNavigateToLogin = { 
-                    navController.popBackStack() 
-                }
-            )
-        }
+        NavHost(
+            navController = navController,
+            startDestination = ROUTE_LOGIN_BASE,
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = { 
+                fadeIn(tween(animDuration)) + 
+                slideInHorizontally(tween(animDuration, easing = easing)) { moveOffset } 
+            },
+            exitTransition = { 
+                fadeOut(tween(animDuration)) + 
+                slideOutHorizontally(tween(animDuration, easing = easing)) { -moveOffset } 
+            },
+            popEnterTransition = { 
+                fadeIn(tween(animDuration)) + 
+                slideInHorizontally(tween(animDuration, easing = easing)) { -moveOffset } 
+            },
+            popExitTransition = { 
+                fadeOut(tween(animDuration)) + 
+                slideOutHorizontally(tween(animDuration, easing = easing)) { moveOffset } 
+            }
+        ) {
+            composable(
+                route = ROUTE_LOGIN_FULL,
+                arguments = listOf(
+                    navArgument("successMessage") { 
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) { backStackEntry ->
+                val encodedMessage = backStackEntry.arguments?.getString("successMessage")
+                val successMessage = encodedMessage?.let { URLDecoder.decode(it, "UTF-8") }
+                
+                LoginScreen(
+                    onNavigateToRegister = { navController.navigate(ROUTE_REGISTER) },
+                    onNavigateToHome = {
+                        navController.navigate(ROUTE_HOME) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    registrationSuccessMessage = successMessage
+                )
+            }
+            
+            composable(route = ROUTE_REGISTER) {
+                RegisterScreen(
+                    onNavigateToLogin = { message ->
+                        if (message != null) {
+                            val encoded = URLEncoder.encode(message, "UTF-8")
+                            navController.navigate("login?successMessage=$encoded") {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        } else {
+                            navController.popBackStack()
+                        }
+                    }
+                )
+            }
 
-        composable(ROUTE_HOME) {
-            HomeScreen()
+            composable(route = ROUTE_HOME) {
+                HomeScreen(
+                    onNavigateToHome = { },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) }
+                )
+            }
+
+            composable(route = ROUTE_PROFILE) {
+                ProfileScreen(
+                    onNavigateToHome = { navigateToSection(ROUTE_HOME) },
+                    onNavigateToProfile = { }
+                )
+            }
         }
     }
 }
