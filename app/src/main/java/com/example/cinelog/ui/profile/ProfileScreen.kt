@@ -29,7 +29,9 @@ import com.example.cinelog.ui.components.CinelogBottomBar
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     onNavigateToHome: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToEditProfile: (String, String, String) -> Unit = { _, _, _ -> }
+
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -107,7 +109,16 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
             ProfileMenuItem(
                 icon = Icons.Default.Edit,
-                title = "Editar perfil"
+                title = "Editar perfil",
+                onClick = {
+                    uiState.user?.let {
+                        onNavigateToEditProfile(
+                            it.nombre,
+                            it.edad.toString(),
+                            it.email
+                        )
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
             ProfileMenuItem(
