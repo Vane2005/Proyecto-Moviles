@@ -48,6 +48,31 @@ class AuthRepository {
         }
     }
 
+    suspend fun updateProfile(nombre: String, edad: Int, email: String): Result<Boolean> {
+        return try {
+            val uid = auth.currentUser?.uid
+                ?: return Result.failure(Exception("No hay sesión activa"))
+
+            // Actualizar datos en Firestore
+            val updates = mapOf(
+                "nombre" to nombre,
+                "edad" to edad,
+                "email" to email
+            )
+            firestore.collection("users").document(uid).update(updates).await()
+
+            // Actualizar email en Firebase Auth si cambió
+            val currentEmail = auth.currentUser?.email
+            if (email != currentEmail) {
+                auth.currentUser?.updateEmail(email)?.await()
+            }
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     fun signOut() {
         auth.signOut()
     }
