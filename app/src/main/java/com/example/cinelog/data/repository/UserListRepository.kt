@@ -2,9 +2,12 @@ package com.example.cinelog.data.repository
 
 import com.example.cinelog.data.model.MovieItem
 import com.example.cinelog.domain.model.ListType
+import com.example.cinelog.domain.model.User
+
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+
 import kotlinx.coroutines.tasks.await
 
 class UserListRepository {
@@ -48,6 +51,23 @@ class UserListRepository {
     }
 
     suspend fun getMoviesFromList(listType: ListType): Result<List<MovieItem>> {
-        TODO("Por implementar")
+        return try {
+            val docRef = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            val snapshot = docRef.get().await()
+            val user = snapshot.toObject(User::class.java)
+                ?: return Result.failure(Exception("Usuario no encontrado"))
+
+            val list = when (listType) {
+                ListType.WATCHLIST -> user.watchlist
+                ListType.FAVORITAS -> user.favoritas
+                ListType.YA_VISTO -> user.yaVisto
+            }
+
+            Result.success(list)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }
