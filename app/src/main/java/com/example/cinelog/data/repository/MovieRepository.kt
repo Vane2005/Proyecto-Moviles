@@ -30,7 +30,7 @@ class MovieRepository {
 
     suspend fun getMovieDetail(id: Int): Result<MovieDetail> {
         return try {
-            Result.success(api.getMovieDetail(id))
+            Result.success(api.getMovieDetail(id, appendToResponse = "videos"))
         } catch (e: Exception) {
             Result.failure(e)
         }

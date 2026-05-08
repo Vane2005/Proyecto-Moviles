@@ -20,11 +20,12 @@ interface TmdbApiService {
     ): MovieResponse
 
     @GET("movie/{movie_id}")
-    suspend fun getMovieDetail(@Path("movie_id") movieId: Int): MovieDetail
+    suspend fun getMovieDetail(@Path("movie_id") movieId: Int, @Query("append_to_response") appendToResponse: String?): MovieDetail
 
     @GET("movie/{movie_id}/credits")
     suspend fun getMovieCredits(@Path("movie_id") movieId: Int): CreditsResponse
 
     @GET("tv/{tv_id}")
     suspend fun getTvDetail(@Path("tv_id") tvId: Int): TvDetail
+
 }

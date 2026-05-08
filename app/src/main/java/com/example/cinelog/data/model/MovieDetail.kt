@@ -11,5 +11,6 @@ data class MovieDetail(
     @SerializedName("release_date") val releaseDate: String?,
     @SerializedName("vote_average") val voteAverage: Double,
     @SerializedName("runtime") val runtime: Int?,
-    @SerializedName("genres") val genres: List<Genre>
+    @SerializedName("genres") val genres: List<Genre>,
+    @SerializedName("videos") val videos: VideoResponse?
 )

@@ -52,6 +52,7 @@ fun MovieDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
 
     LaunchedEffect(movieId) {
         viewModel.loadMovieDetail(movieId)
@@ -61,7 +62,7 @@ fun MovieDetailScreen(
         containerColor = CineLogColors.Background,
         bottomBar = {
             CinelogBottomBar(
-                currentRoute = "", 
+                currentRoute = "",
                 onNavigateToHome = onNavigateToHome,
                 onNavigateToProfile = onNavigateToProfile
             )
@@ -73,7 +74,11 @@ fun MovieDetailScreen(
             }
         } else if (uiState.movie != null) {
             val movie = uiState.movie!!
-            
+
+            val trailerKey = movie.videos?.results?.find {
+                it.site == "YouTube" && (it.type == "Trailer" || it.type == "Teaser")
+            }?.key
+
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Column(
                     modifier = Modifier
@@ -88,7 +93,7 @@ fun MovieDetailScreen(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
-                        
+
                         Box(modifier = Modifier.fillMaxSize().background(
                             Brush.verticalGradient(
                                 colors = listOf(
@@ -141,9 +146,9 @@ fun MovieDetailScreen(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                                
+
                                 Spacer(modifier = Modifier.height(10.dp))
-                                
+
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -171,8 +176,14 @@ fun MovieDetailScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // Boton para el Trailer
                                     Button(
-                                        onClick = { },
+                                        onClick = {
+                                            trailerKey?.let {
+                                                uriHandler.openUri("https://www.youtube.com/watch?v=$it")
+                                            }
+                                        },
+                                        enabled = trailerKey != null,
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
                                         shape = RoundedCornerShape(12.dp),
                                         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -180,7 +191,11 @@ fun MovieDetailScreen(
                                     ) {
                                         Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(20.dp))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text("Trailer", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                        Text(
+                                            text = if (trailerKey != null) "Trailer" else "Sin trailer",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 13.sp
+                                        )
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(
@@ -205,7 +220,7 @@ fun MovieDetailScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(140.dp)) 
+                    Spacer(modifier = Modifier.height(140.dp))
                 }
 
                 // Botones de acción inferiores con feedback visual y menú moderno
@@ -286,7 +301,7 @@ fun AnimatedActionButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    
+
     // Animación elástica de escala al pulsar
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.94f else 1f,
