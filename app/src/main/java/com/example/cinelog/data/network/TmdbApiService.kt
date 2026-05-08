@@ -1,5 +1,6 @@
 package com.example.cinelog.data.network
 
+import com.example.cinelog.data.model.CreditsResponse
 import com.example.cinelog.data.model.MovieDetail
 import com.example.cinelog.data.model.MovieResponse
 import com.example.cinelog.data.model.TvDetail
@@ -20,6 +21,9 @@ interface TmdbApiService {
 
     @GET("movie/{movie_id}")
     suspend fun getMovieDetail(@Path("movie_id") movieId: Int): MovieDetail
+
+    @GET("movie/{movie_id}/credits")
+    suspend fun getMovieCredits(@Path("movie_id") movieId: Int): CreditsResponse
 
     @GET("tv/{tv_id}")
     suspend fun getTvDetail(@Path("tv_id") tvId: Int): TvDetail

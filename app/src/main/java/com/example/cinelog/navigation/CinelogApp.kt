@@ -20,20 +20,21 @@ import com.example.cinelog.ui.home.HomeScreen
 import com.example.cinelog.ui.login.LoginScreen
 import com.example.cinelog.ui.profile.ProfileScreen
 import com.example.cinelog.ui.register.RegisterScreen
+import com.example.cinelog.ui.detail.MovieDetailScreen
+import com.example.cinelog.ui.editProfile.EditProfileScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
-import com.example.cinelog.ui.editProfile.EditProfileScreen
 
 private const val ROUTE_LOGIN_BASE = "login"
 private const val ROUTE_LOGIN_FULL = "login?successMessage={successMessage}"
 private const val ROUTE_REGISTER = "register"
 private const val ROUTE_HOME = "home"
 private const val ROUTE_PROFILE = "profile"
-
+private const val ROUTE_DETAIL = "detail/{movieId}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
 
-private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE)
+private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail")
 
 @Composable
 fun CinelogApp() {
@@ -45,9 +46,12 @@ fun CinelogApp() {
     val animDuration = 400 
     val easing = FastOutSlowInEasing
 
+    // Lógica de navegación unificada para secciones principales (Bottom Bar)
     val navigateToSection: (String) -> Unit = { route ->
         navController.navigate(route) {
-            popUpTo(navController.graph.findStartDestination().id) {
+            // Buscamos el inicio real para limpiar el stack y asegurar que el botón funcione siempre
+            val startId = navController.graph.findStartDestination().id
+            popUpTo(startId) {
                 saveState = true
             }
             launchSingleTop = true
@@ -70,12 +74,8 @@ fun CinelogApp() {
         onDispose { auth.removeAuthStateListener(listener) }
     }
 
-    LaunchedEffect(Unit) {
-        if (auth.currentUser != null) {
-            navController.navigate(ROUTE_HOME) {
-                popUpTo(0) { inclusive = true }
-            }
-        }
+    val startDestination = remember {
+        if (auth.currentUser != null) ROUTE_HOME else ROUTE_LOGIN_BASE
     }
 
     Surface(
@@ -84,44 +84,25 @@ fun CinelogApp() {
     ) {
         NavHost(
             navController = navController,
-            startDestination = ROUTE_LOGIN_BASE,
+            startDestination = startDestination,
             modifier = Modifier.fillMaxSize(),
-            enterTransition = { 
-                fadeIn(tween(animDuration)) + 
-                slideInHorizontally(tween(animDuration, easing = easing)) { moveOffset } 
-            },
-            exitTransition = { 
-                fadeOut(tween(animDuration)) + 
-                slideOutHorizontally(tween(animDuration, easing = easing)) { -moveOffset } 
-            },
-            popEnterTransition = { 
-                fadeIn(tween(animDuration)) + 
-                slideInHorizontally(tween(animDuration, easing = easing)) { -moveOffset } 
-            },
-            popExitTransition = { 
-                fadeOut(tween(animDuration)) + 
-                slideOutHorizontally(tween(animDuration, easing = easing)) { moveOffset } 
-            }
+            enterTransition = { fadeIn(tween(animDuration)) + slideInHorizontally(tween(animDuration, easing = easing)) { moveOffset } },
+            exitTransition = { fadeOut(tween(animDuration)) + slideOutHorizontally(tween(animDuration, easing = easing)) { -moveOffset } },
+            popEnterTransition = { fadeIn(tween(animDuration)) + slideInHorizontally(tween(animDuration, easing = easing)) { -moveOffset } },
+            popExitTransition = { fadeOut(tween(animDuration)) + slideOutHorizontally(tween(animDuration, easing = easing)) { moveOffset } }
         ) {
             composable(
                 route = ROUTE_LOGIN_FULL,
-                arguments = listOf(
-                    navArgument("successMessage") { 
-                        type = NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    }
-                )
+                arguments = listOf(navArgument("successMessage") { type = NavType.StringType; nullable = true; defaultValue = null })
             ) { backStackEntry ->
                 val encodedMessage = backStackEntry.arguments?.getString("successMessage")
                 val successMessage = encodedMessage?.let { URLDecoder.decode(it, "UTF-8") }
-                
                 LoginScreen(
                     onNavigateToRegister = { navController.navigate(ROUTE_REGISTER) },
-                    onNavigateToHome = {
-                        navController.navigate(ROUTE_HOME) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                    onNavigateToHome = { 
+                        navController.navigate(ROUTE_HOME) { 
+                            popUpTo(0) { inclusive = true } 
+                        } 
                     },
                     registrationSuccessMessage = successMessage
                 )
@@ -132,9 +113,7 @@ fun CinelogApp() {
                     onNavigateToLogin = { message ->
                         if (message != null) {
                             val encoded = URLEncoder.encode(message, "UTF-8")
-                            navController.navigate("login?successMessage=$encoded") {
-                                popUpTo(0) { inclusive = true }
-                            }
+                            navController.navigate("login?successMessage=$encoded") { popUpTo(0) { inclusive = true } }
                         } else {
                             navController.popBackStack()
                         }
@@ -145,6 +124,26 @@ fun CinelogApp() {
             composable(route = ROUTE_HOME) {
                 HomeScreen(
                     onNavigateToHome = { },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") }
+                )
+            }
+
+            composable(
+                route = ROUTE_DETAIL,
+                arguments = listOf(navArgument("movieId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
+                MovieDetailScreen(
+                    movieId = movieId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHome = { 
+                        // SOLUCIÓN: Regreso directo al Home limpiando el stack del detalle
+                        navController.navigate(ROUTE_HOME) {
+                            popUpTo(ROUTE_HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) }
                 )
             }
@@ -153,45 +152,20 @@ fun CinelogApp() {
                 ProfileScreen(
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { },
-                    onNavigateToEditProfile = { nombre, edad, email ->
-                        val encodedNombre = URLEncoder.encode(nombre, "UTF-8")
-                        val encodedEdad = URLEncoder.encode(edad, "UTF-8")
-                        val encodedEmail = URLEncoder.encode(email, "UTF-8")
-
-                        navController.navigate("edit_profile/$encodedNombre/$encodedEdad/$encodedEmail")
+                    onNavigateToEditProfile = { n, ed, em ->
+                        navController.navigate("edit_profile/${URLEncoder.encode(n, "UTF-8")}/${URLEncoder.encode(ed, "UTF-8")}/${URLEncoder.encode(em, "UTF-8")}")
                     }
-
                 )
             }
 
             composable(
                 route = ROUTE_EDIT_PROFILE,
-                arguments = listOf(
-                    navArgument("nombre") { type = NavType.StringType },
-                    navArgument("edad") { type = NavType.StringType },
-                    navArgument("email") { type = NavType.StringType }
-                )
+                arguments = listOf(navArgument("nombre") { type = NavType.StringType }, navArgument("edad") { type = NavType.StringType }, navArgument("email") { type = NavType.StringType })
             ) { backStackEntry ->
-
-                val nombre = URLDecoder.decode(
-                    backStackEntry.arguments?.getString("nombre") ?: "",
-                    "UTF-8"
-                )
-
-                val edad = URLDecoder.decode(
-                    backStackEntry.arguments?.getString("edad") ?: "",
-                    "UTF-8"
-                )
-
-                val email = URLDecoder.decode(
-                    backStackEntry.arguments?.getString("email") ?: "",
-                    "UTF-8"
-                )
-
                 EditProfileScreen(
-                    initialNombre = nombre,
-                    initialEdad = edad,
-                    initialEmail = email,
+                    initialNombre = URLDecoder.decode(backStackEntry.arguments?.getString("nombre") ?: "", "UTF-8"),
+                    initialEdad = URLDecoder.decode(backStackEntry.arguments?.getString("edad") ?: "", "UTF-8"),
+                    initialEmail = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8"),
                     onNavigateBack = { navController.popBackStack() },
                     onSaveSuccessful = { navController.popBackStack() },
                     onChangePassword = { }

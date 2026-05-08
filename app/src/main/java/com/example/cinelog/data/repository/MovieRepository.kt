@@ -1,5 +1,6 @@
 package com.example.cinelog.data.repository
 
+import com.example.cinelog.data.model.CreditsResponse
 import com.example.cinelog.data.model.Movie
 import com.example.cinelog.data.model.MovieDetail
 import com.example.cinelog.data.model.TvDetail
@@ -30,6 +31,14 @@ class MovieRepository {
     suspend fun getMovieDetail(id: Int): Result<MovieDetail> {
         return try {
             Result.success(api.getMovieDetail(id))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getMovieCredits(id: Int): Result<CreditsResponse> {
+        return try {
+            Result.success(api.getMovieCredits(id))
         } catch (e: Exception) {
             Result.failure(e)
         }

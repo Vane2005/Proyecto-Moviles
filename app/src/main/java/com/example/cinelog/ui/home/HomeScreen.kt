@@ -1,5 +1,6 @@
 package com.example.cinelog.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,7 +30,8 @@ private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onNavigateToHome: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {}
+    onNavigateToProfile: () -> Unit = {},
+    onNavigateToMovieDetail: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -54,17 +56,17 @@ fun HomeScreen(
                 SearchBar()
 
                 uiState.featuredMovie?.let {
-                    FeaturedBanner(it)
+                    FeaturedBanner(movie = it, onClick = { onNavigateToMovieDetail(it.id) })
                 }
 
                 SectionTitle("Terror")
-                MovieCarousel(uiState.horrorMovies)
+                MovieCarousel(uiState.horrorMovies, onMovieClick = onNavigateToMovieDetail)
 
                 SectionTitle("Romance")
-                MovieCarousel(uiState.romanceMovies)
+                MovieCarousel(uiState.romanceMovies, onMovieClick = onNavigateToMovieDetail)
 
                 SectionTitle("Animación")
-                MovieCarousel(uiState.animationMovies)
+                MovieCarousel(uiState.animationMovies, onMovieClick = onNavigateToMovieDetail)
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -100,14 +102,14 @@ fun SearchBar() {
 }
 
 @Composable
-fun FeaturedBanner(movie: Movie) {
+fun FeaturedBanner(movie: Movie, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp)
-
     ) {
         AsyncImage(
             model = BACKDROP_BASE + (movie.backdropPath ?: ""),
@@ -129,7 +131,7 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun MovieCarousel(movies: List<Movie>) {
+fun MovieCarousel(movies: List<Movie>, onMovieClick: (Int) -> Unit) {
     if (movies.isEmpty()) {
         Text(
             text = "No hay películas",
@@ -147,19 +149,19 @@ fun MovieCarousel(movies: List<Movie>) {
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         items(movies) { movie ->
-            MovieCard(movie, cardWidth)
+            MovieCard(movie, cardWidth, onClick = { onMovieClick(movie.id) })
         }
     }
 }
 
 @Composable
-fun MovieCard(movie: Movie, width: Dp) {
+fun MovieCard(movie: Movie, width: Dp, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(width)
-            .height(width * 1.5f),
+            .height(width * 1.5f)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp)
-
     ) {
         AsyncImage(
             model = IMAGE_BASE + (movie.posterPath ?: ""),
