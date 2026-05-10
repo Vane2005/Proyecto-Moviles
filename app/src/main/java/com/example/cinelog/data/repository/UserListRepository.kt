@@ -31,7 +31,78 @@ class UserListRepository {
         firestore.collection("users").document(it)
     }
 
+    private fun mergeYaVistoEntry(
+        existing: MovieItem?,
+        incoming: MovieItem,
+        defaultTimestamp: String
+    ): MovieItem {
+        val titulo = incoming.titulo.ifBlank { existing?.titulo ?: "" }
+        val posterPath = incoming.posterPath.ifBlank { existing?.posterPath ?: "" }
+        val fechaAgregada = when {
+            incoming.fechaAgregada.isNotBlank() -> incoming.fechaAgregada
+            existing?.fechaAgregada?.isNotBlank() == true -> existing.fechaAgregada
+            else -> defaultTimestamp
+        }
+        val calificacion = incoming.calificacion ?: existing?.calificacion
+        val reseña = if (incoming.reseña != null) {
+            incoming.reseña.trim().takeIf { it.isNotEmpty() }
+        } else {
+            existing?.reseña
+        }
+        return MovieItem(
+            movieId = incoming.movieId,
+            titulo = titulo,
+            posterPath = posterPath,
+            fechaAgregada = fechaAgregada,
+            calificacion = calificacion,
+            reseña = reseña
+        )
+    }
+
+    suspend fun addOrUpdateYaVisto(movie: MovieItem): Result<Boolean> {
+        return try {
+            val docRef = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            if (movie.movieId == 0) {
+                return Result.failure(Exception("movieId inválido"))
+            }
+
+            movie.calificacion?.let {
+                if (it !in 1..5) {
+                    return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
+                }
+            }
+
+            val snapshot = docRef.get().await()
+            val user = snapshot.toObject(User::class.java)
+                ?: return Result.failure(Exception("Usuario no encontrado"))
+
+            val ahora = ZonedDateTime.now(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+
+            val existing = user.yaVisto.find { it.movieId == movie.movieId }
+            val merged = mergeYaVistoEntry(existing, movie, ahora)
+
+            merged.calificacion?.let {
+                if (it !in 1..5) {
+                    return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
+                }
+            }
+
+            val nuevos = user.yaVisto.filterNot { it.movieId == movie.movieId } + merged
+
+            docRef.update("yaVisto", nuevos).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun addMovieToList(movie: MovieItem, listType: ListType): Result<Boolean> {
+        if (listType == ListType.YA_VISTO) {
+            return addOrUpdateYaVisto(movie)
+        }
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
@@ -43,11 +114,34 @@ class UserListRepository {
     }
 
     suspend fun removeMovieFromList(movie: MovieItem, listType: ListType): Result<Boolean> {
+        if (listType == ListType.YA_VISTO) {
+            return removeYaVistoByMovieId(movie.movieId)
+        }
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
             doc.update(getListName(listType), FieldValue.arrayRemove(movie)).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun removeYaVistoByMovieId(movieId: Int): Result<Boolean> {
+        return try {
+            val docRef = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+            if (movieId == 0) {
+                return Result.failure(Exception("movieId inválido"))
+            }
+
+            val snapshot = docRef.get().await()
+            val user = snapshot.toObject(User::class.java)
+                ?: return Result.failure(Exception("Usuario no encontrado"))
+
+            val nuevos = user.yaVisto.filterNot { it.movieId == movieId }
+            docRef.update("yaVisto", nuevos).await()
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
@@ -70,46 +164,6 @@ class UserListRepository {
             }
 
             Result.success(list)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    suspend fun addOrUpdateYaVisto(movie: MovieItem): Result<Boolean> {
-        return try {
-            val docRef = getUserDocument()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
-
-            if (movie.movieId == 0) {
-                return Result.failure(Exception("movieId inválido"))
-            }
-
-            val cal = movie.calificacion
-                ?: return Result.failure(Exception("La calificación es obligatoria"))
-            if (cal !in 1..5) {
-                return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
-            }
-
-            val snapshot = docRef.get().await()
-            val user = snapshot.toObject(User::class.java)
-                ?: return Result.failure(Exception("Usuario no encontrado"))
-
-            val ahora = ZonedDateTime.now(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-
-            val reseñaFinal = movie.reseña?.trim().orEmpty().ifBlank { null }
-
-            val itemToSave = movie.copy(
-                fechaAgregada = if (movie.fechaAgregada.isBlank()) ahora else movie.fechaAgregada,
-                calificacion = cal,
-                reseña = reseñaFinal
-            )
-
-            val nuevos = user.yaVisto
-                .filterNot { it.movieId == movie.movieId } + itemToSave
-
-            docRef.update("yaVisto", nuevos).await()
-            Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
         }
