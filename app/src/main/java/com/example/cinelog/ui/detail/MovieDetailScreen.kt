@@ -35,6 +35,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.cinelog.domain.model.ListType
 import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.components.CinelogBottomBar
 import java.util.Locale
@@ -50,15 +51,25 @@ fun MovieDetailScreen(
     onNavigateToProfile: () -> Unit,
     viewModel: MovieDetailViewModel = viewModel()
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(movieId) {
         viewModel.loadMovieDetail(movieId)
     }
 
+    LaunchedEffect(uiState.successMessage) {
+        uiState.successMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearSuccessMessage()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = CineLogColors.Background,
         bottomBar = {
             CinelogBottomBar(
@@ -262,17 +273,24 @@ fun MovieDetailScreen(
                                         modifier = Modifier.padding(vertical = 12.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally
                                     ) {
-                                        AddOptionItem("Favoritas") { viewModel.dismissAddOptions() }
-                                        HorizontalDivider(
-                                            modifier = Modifier.padding(horizontal = 24.dp),
-                                            color = Color.White.copy(alpha = 0.1f)
-                                        )
-                                        AddOptionItem("Ver mas tarde") { viewModel.dismissAddOptions() }
-                                        HorizontalDivider(
-                                            modifier = Modifier.padding(horizontal = 24.dp),
-                                            color = Color.White.copy(alpha = 0.1f)
-                                        )
-                                        AddOptionItem("Vistas") { viewModel.dismissAddOptions() }
+                                        AddOptionItem(
+                                            text = "Favoritas",
+                                            enabled = !uiState.inFavoritas
+                                        ) {
+                                            viewModel.addToList(ListType.FAVORITAS)
+                                        }
+                                        AddOptionItem(
+                                            text = "Ver mas tarde",
+                                            enabled = !uiState.inWatchlist
+                                        ) {
+                                            viewModel.addToList(ListType.WATCHLIST)
+                                        }
+                                        AddOptionItem(
+                                            text = "Vistas",
+                                            enabled = !uiState.inYaVisto
+                                        ) {
+                                            viewModel.addToList(ListType.YA_VISTO)
+                                        }
                                     }
                                 }
                             }
@@ -328,15 +346,20 @@ fun AnimatedActionButton(
 }
 
 @Composable
-private fun AddOptionItem(text: String, onClick: () -> Unit) {
+private fun AddOptionItem(
+    text: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
     TextButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = Modifier.fillMaxWidth().height(48.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Text(
-            text = text,
-            color = Color.White,
+            text = if (enabled) text else "$text ✓",
+            color = if (enabled) Color.White else Color.White.copy(alpha = 0.4f),
             fontSize = 15.sp,
             fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center
