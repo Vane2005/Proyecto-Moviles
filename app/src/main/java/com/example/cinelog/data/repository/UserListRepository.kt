@@ -38,11 +38,6 @@ class UserListRepository {
     ): MovieItem {
         val titulo = incoming.titulo.ifBlank { existing?.titulo ?: "" }
         val posterPath = incoming.posterPath.ifBlank { existing?.posterPath ?: "" }
-        val fechaAgregada = when {
-            incoming.fechaAgregada.isNotBlank() -> incoming.fechaAgregada
-            existing?.fechaAgregada?.isNotBlank() == true -> existing.fechaAgregada
-            else -> defaultTimestamp
-        }
         val calificacion = incoming.calificacion ?: existing?.calificacion
         val reseña = if (incoming.reseña != null) {
             incoming.reseña.trim().takeIf { it.isNotEmpty() }
@@ -53,7 +48,6 @@ class UserListRepository {
             movieId = incoming.movieId,
             titulo = titulo,
             posterPath = posterPath,
-            fechaAgregada = fechaAgregada,
             calificacion = calificacion,
             reseña = reseña
         )
@@ -64,34 +58,23 @@ class UserListRepository {
             val docRef = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
-            if (movie.movieId == 0) {
-                return Result.failure(Exception("movieId inválido"))
-            }
+            if (movie.movieId == 0) return Result.failure(Exception("movieId inválido"))
 
             movie.calificacion?.let {
-                if (it !in 1..5) {
-                    return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
-                }
+                if (it !in 1..5) return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
             }
 
             val snapshot = docRef.get().await()
             val user = snapshot.toObject(User::class.java)
                 ?: return Result.failure(Exception("Usuario no encontrado"))
 
-            val ahora = ZonedDateTime.now(ZoneId.systemDefault())
-                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-
             val existing = user.yaVisto.find { it.movieId == movie.movieId }
-            val merged = mergeYaVistoEntry(existing, movie, ahora)
-
-            merged.calificacion?.let {
-                if (it !in 1..5) {
-                    return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
-                }
-            }
+            val merged = existing?.copy(
+                calificacion = movie.calificacion ?: existing.calificacion,
+                reseña = movie.reseña ?: existing.reseña
+            ) ?: movie
 
             val nuevos = user.yaVisto.filterNot { it.movieId == movie.movieId } + merged
-
             docRef.update("yaVisto", nuevos).await()
             Result.success(true)
         } catch (e: Exception) {
