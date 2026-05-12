@@ -4,6 +4,8 @@ import com.example.cinelog.domain.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import com.google.firebase.auth.EmailAuthProvider
+import kotlinx.coroutines.tasks.await
 
 class AuthRepository {
 
@@ -82,8 +84,40 @@ class AuthRepository {
         }
     }
 
+    suspend fun changePassword(
+        currentPassword: String,
+        newPassword: String
+    ): Result<Unit> {
+
+        return try {
+
+            val user = FirebaseAuth.getInstance().currentUser
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            val email = user.email
+                ?: return Result.failure(Exception("Correo no encontrado"))
+
+            val credential = EmailAuthProvider.getCredential(
+                email,
+                currentPassword
+            )
+
+            user.reauthenticate(credential).await()
+
+            user.updatePassword(newPassword).await()
+
+            Result.success(Unit)
+
+        } catch (e: Exception) {
+
+            Result.failure(e)
+        }
+    }
+
     fun signOut() {
         auth.signOut()
     }
+
+
 
 }
