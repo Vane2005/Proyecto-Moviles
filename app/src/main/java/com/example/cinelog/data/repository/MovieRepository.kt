@@ -51,4 +51,14 @@ class MovieRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun searchMovies(query: String): Result<List<Movie>> {
+        return try {
+            if (query.isBlank()) return Result.success(emptyList())
+            val response = api.searchMovies(query)
+            Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
