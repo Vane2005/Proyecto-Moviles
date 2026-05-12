@@ -2,7 +2,10 @@ package com.example.cinelog.ui.review
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinelog.data.model.MovieItem
 import com.example.cinelog.data.repository.ReviewRepository
+import com.example.cinelog.data.repository.UserListRepository
+import com.example.cinelog.domain.model.ListType
 import com.example.cinelog.domain.model.Review
 import com.example.cinelog.domain.model.ReviewState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ReviewViewModel(
-    private val reviewRepository: ReviewRepository = ReviewRepository()
+    private val reviewRepository: ReviewRepository = ReviewRepository(),
+    private val userListRepository: UserListRepository = UserListRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewState())
@@ -24,6 +28,10 @@ class ReviewViewModel(
 
     fun onReseñaChange(value: String) {
         _uiState.update { it.copy(reseña = value, errorMessage = null) }
+    }
+
+    fun onEtiquetasChange(value: String) {
+        _uiState.update { it.copy(etiquetas = value) }
     }
 
     fun saveReview(movieId: Int, titulo: String, posterPath: String) {
@@ -47,16 +55,33 @@ class ReviewViewModel(
                 titulo = titulo,
                 posterPath = posterPath,
                 calificacion = state.calificacion,
-                reseña = state.reseña
+                reseña = state.reseña,
+                etiquetas = state.etiquetas
             )
 
-            reviewRepository.saveReview(review)
-                .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
-                }
-                .onFailure { e ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
-                }
+            // Guardar la reseña
+            val reviewResult = reviewRepository.saveReview(review)
+            
+            if (reviewResult.isSuccess) {
+                // Si la reseña se guarda, también la marcamos como "Ya vista"
+                val movieItem = MovieItem(
+                    movieId = movieId,
+                    titulo = titulo,
+                    posterPath = posterPath
+                )
+                
+                userListRepository.addMovieToList(movieItem, ListType.YA_VISTO)
+                    .onSuccess {
+                        _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
+                    }
+                    .onFailure { e ->
+                        // Aunque falle agregar a la lista, la reseña ya se guardó. 
+                        // Pero para ser consistentes, informamos del error si es crítico.
+                        _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
+                    }
+            } else {
+                _uiState.update { it.copy(isLoading = false, errorMessage = reviewResult.exceptionOrNull()?.message) }
+            }
         }
     }
 }

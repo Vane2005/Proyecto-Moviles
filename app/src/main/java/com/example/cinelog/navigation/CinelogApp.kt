@@ -24,6 +24,7 @@ import com.example.cinelog.ui.detail.MovieDetailScreen
 import com.example.cinelog.ui.editProfile.EditProfileScreen
 import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
+import com.example.cinelog.ui.review.ReviewScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -35,12 +36,11 @@ private const val ROUTE_HOME = "home"
 private const val ROUTE_PROFILE = "profile"
 private const val ROUTE_DETAIL = "detail/{movieId}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
-
 private const val ROUTE_CHANGE_PASSWORD = "change_password"
-
 private const val ROUTE_USER_LISTS = "user_lists"
+private const val ROUTE_REVIEW = "review/{movieId}/{titulo}/{posterPath}"
 
-private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail")
+private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail", "review")
 
 @Composable
 fun CinelogApp() {
@@ -52,10 +52,8 @@ fun CinelogApp() {
     val animDuration = 400 
     val easing = FastOutSlowInEasing
 
-    // Lógica de navegación unificada para secciones principales (Bottom Bar)
     val navigateToSection: (String) -> Unit = { route ->
         navController.navigate(route) {
-            // Buscamos el inicio real para limpiar el stack y asegurar que el botón funcione siempre
             val startId = navController.graph.findStartDestination().id
             popUpTo(startId) {
                 saveState = true
@@ -133,7 +131,6 @@ fun CinelogApp() {
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
-
                 )
             }
 
@@ -146,12 +143,39 @@ fun CinelogApp() {
                     movieId = movieId,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = { 
-                        // SOLUCIÓN: Regreso directo al Home limpiando el stack del detalle
                         navController.navigate(ROUTE_HOME) {
                             popUpTo(ROUTE_HOME) { inclusive = false }
                             launchSingleTop = true
                         }
                     },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
+                    onNavigateToReview = { id: Int, title: String, poster: String ->
+                        val encodedTitle = URLEncoder.encode(title, "UTF-8")
+                        val encodedPoster = URLEncoder.encode(poster, "UTF-8")
+                        navController.navigate("review/$id/$encodedTitle/$encodedPoster")
+                    }
+                )
+            }
+
+            composable(
+                route = ROUTE_REVIEW,
+                arguments = listOf(
+                    navArgument("movieId") { type = NavType.IntType },
+                    navArgument("titulo") { type = NavType.StringType },
+                    navArgument("posterPath") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
+                val titulo = URLDecoder.decode(backStackEntry.arguments?.getString("titulo") ?: "", "UTF-8")
+                val posterPath = URLDecoder.decode(backStackEntry.arguments?.getString("posterPath") ?: "", "UTF-8")
+                
+                ReviewScreen(
+                    movieId = movieId,
+                    titulo = titulo,
+                    posterPath = posterPath,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
                 )
@@ -185,7 +209,6 @@ fun CinelogApp() {
             }
 
             composable(route = ROUTE_CHANGE_PASSWORD) {
-
                 ChangePasswordScreen(
                     onNavigateBack = {
                         navController.popBackStack()
@@ -197,9 +220,7 @@ fun CinelogApp() {
             }
 
             composable(route = ROUTE_USER_LISTS) {
-
                 UserListScreen(
-
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToLists = {},
@@ -208,7 +229,6 @@ fun CinelogApp() {
                     }
                 )
             }
-
         }
     }
 }

@@ -38,7 +38,6 @@ import coil.compose.AsyncImage
 import com.example.cinelog.domain.model.ListType
 import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.components.CinelogBottomBar
-import java.util.Locale
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
@@ -50,6 +49,7 @@ fun MovieDetailScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToLists: () -> Unit,
+    onNavigateToReview: (Int, String, String) -> Unit,
     viewModel: MovieDetailViewModel = viewModel()
 ) {
 
@@ -253,7 +253,9 @@ fun MovieDetailScreen(
                             text = "Reseña",
                             icon = Icons.Default.Star,
                             modifier = Modifier.weight(1f),
-                            onClick = { }
+                            onClick = { 
+                                onNavigateToReview(movie.id, movie.title, movie.posterPath ?: "")
+                            }
                         )
 
                         // Contenedor para el botón Agregar y su menú
