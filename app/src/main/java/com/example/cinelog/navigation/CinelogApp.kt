@@ -22,6 +22,7 @@ import com.example.cinelog.ui.profile.ProfileScreen
 import com.example.cinelog.ui.register.RegisterScreen
 import com.example.cinelog.ui.detail.MovieDetailScreen
 import com.example.cinelog.ui.editProfile.EditProfileScreen
+import com.example.cinelog.ui.changePassword.ChangePasswordScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -33,6 +34,8 @@ private const val ROUTE_HOME = "home"
 private const val ROUTE_PROFILE = "profile"
 private const val ROUTE_DETAIL = "detail/{movieId}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
+
+private const val ROUTE_CHANGE_PASSWORD = "change_password"
 
 private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail")
 
@@ -168,7 +171,21 @@ fun CinelogApp() {
                     initialEmail = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8"),
                     onNavigateBack = { navController.popBackStack() },
                     onSaveSuccessful = { navController.popBackStack() },
-                    onChangePassword = { }
+                    onChangePassword = {
+                        navController.navigate(ROUTE_CHANGE_PASSWORD)
+                    }
+                )
+            }
+
+            composable(route = ROUTE_CHANGE_PASSWORD) {
+
+                ChangePasswordScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+                    onPasswordChanged = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }
