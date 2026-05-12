@@ -28,4 +28,10 @@ interface TmdbApiService {
     @GET("tv/{tv_id}")
     suspend fun getTvDetail(@Path("tv_id") tvId: Int): TvDetail
 
+    @GET("search/movie")
+    suspend fun searchMovies(
+        @Query("query") query: String,
+        @Query("language") language: String = "es-ES"
+    ): MovieResponse
+
 }
