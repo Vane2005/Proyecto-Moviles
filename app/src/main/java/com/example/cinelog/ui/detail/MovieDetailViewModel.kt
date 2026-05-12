@@ -95,6 +95,13 @@ class MovieDetailViewModel(
         viewModelScope.launch {
             userListRepository.addMovieToList(movieItem, listType)
                 .onSuccess {
+                    if (listType == ListType.FAVORITAS) {
+
+                        userListRepository.addMovieToList(
+                            movieItem,
+                            ListType.YA_VISTO
+                        )
+                    }
                     val mensaje = when (listType) {
                         ListType.WATCHLIST -> "Agregada a Ver más tarde"
                         ListType.FAVORITAS -> "Agregada a Favoritas"

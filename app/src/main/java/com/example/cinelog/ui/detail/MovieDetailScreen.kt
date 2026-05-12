@@ -49,6 +49,7 @@ fun MovieDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToLists: () -> Unit,
     viewModel: MovieDetailViewModel = viewModel()
 ) {
 
@@ -75,7 +76,8 @@ fun MovieDetailScreen(
             CinelogBottomBar(
                 currentRoute = "",
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToProfile = onNavigateToProfile
+                onNavigateToProfile = onNavigateToProfile,
+                onNavigateToLists = onNavigateToLists
             )
         }
     ) { padding ->

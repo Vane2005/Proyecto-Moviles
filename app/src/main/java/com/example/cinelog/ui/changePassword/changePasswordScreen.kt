@@ -22,7 +22,7 @@ import com.example.cinelog.ui.components.CineLogColors
 
 @Composable
 fun ChangePasswordScreen(
-    viewModel: ChangePasswordViewModel = viewModel(),
+    viewModel: changePasswordViewModel = viewModel(),
     onNavigateBack: () -> Unit = {},
     onPasswordChanged: () -> Unit = {}
 ) {

@@ -31,6 +31,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToLists: () -> Unit = {},
     onNavigateToMovieDetail: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -42,7 +43,8 @@ fun HomeScreen(
             CinelogBottomBar(
                 currentRoute = "home",
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToProfile = onNavigateToProfile
+                onNavigateToProfile = onNavigateToProfile,
+                onNavigateToLists = onNavigateToLists
             ) 
         }
     ) { padding ->
