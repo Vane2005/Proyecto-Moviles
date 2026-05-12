@@ -22,6 +22,7 @@ import com.example.cinelog.ui.profile.ProfileScreen
 import com.example.cinelog.ui.register.RegisterScreen
 import com.example.cinelog.ui.detail.MovieDetailScreen
 import com.example.cinelog.ui.editProfile.EditProfileScreen
+import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
@@ -36,6 +37,8 @@ private const val ROUTE_DETAIL = "detail/{movieId}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
 
 private const val ROUTE_CHANGE_PASSWORD = "change_password"
+
+private const val ROUTE_USER_LISTS = "user_lists"
 
 private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail")
 
@@ -128,7 +131,9 @@ fun CinelogApp() {
                 HomeScreen(
                     onNavigateToHome = { },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
-                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") }
+                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
+
                 )
             }
 
@@ -147,7 +152,8 @@ fun CinelogApp() {
                             launchSingleTop = true
                         }
                     },
-                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) }
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
                 )
             }
 
@@ -155,6 +161,7 @@ fun CinelogApp() {
                 ProfileScreen(
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onNavigateToEditProfile = { n, ed, em ->
                         navController.navigate("edit_profile/${URLEncoder.encode(n, "UTF-8")}/${URLEncoder.encode(ed, "UTF-8")}/${URLEncoder.encode(em, "UTF-8")}")
                     }
@@ -188,6 +195,20 @@ fun CinelogApp() {
                     }
                 )
             }
+
+            composable(route = ROUTE_USER_LISTS) {
+
+                UserListScreen(
+
+                    onNavigateToHome = { navigateToSection(ROUTE_HOME) },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToLists = {},
+                    onMovieClick = { movieId ->
+                        navController.navigate("detail/$movieId")
+                    }
+                )
+            }
+
         }
     }
 }

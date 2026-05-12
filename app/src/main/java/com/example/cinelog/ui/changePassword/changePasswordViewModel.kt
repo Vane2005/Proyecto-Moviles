@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ChangePasswordViewModel(
+class changePasswordViewModel(
     private val authRepository: AuthRepository = AuthRepository()
 ) : ViewModel() {
 

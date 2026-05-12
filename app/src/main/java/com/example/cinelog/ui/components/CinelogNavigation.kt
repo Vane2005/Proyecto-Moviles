@@ -27,7 +27,8 @@ object CineLogColors {
 fun CinelogBottomBar(
     currentRoute: String,
     onNavigateToHome: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToLists: () -> Unit
 ) {
     NavigationBar(
         containerColor = CineLogColors.NavBar
@@ -44,13 +45,15 @@ fun CinelogBottomBar(
         )
 
         NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.AutoMirrored.Filled.List, null) },
+            selected = currentRoute == "lists",
+            onClick = onNavigateToLists,
+            icon = {
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
+            },
             colors = NavigationBarItemDefaults.colors(
-                selectedIconColor   = CineLogColors.NavIconActive,
+                selectedIconColor = CineLogColors.NavIconActive,
                 unselectedIconColor = CineLogColors.NavIconInactive,
-                indicatorColor      = CineLogColors.NavBar,
+                indicatorColor = CineLogColors.NavBar,
             )
         )
 

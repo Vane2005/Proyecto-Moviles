@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -34,17 +35,25 @@ fun EditProfileScreen(
     onSaveSuccessful: () -> Unit = {},
     onChangePassword: () -> Unit = {}
 ) {
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     val scrollState = rememberScrollState()
 
-    // 🔥 CARGAR DATOS AL ENTRAR
     LaunchedEffect(Unit) {
-        viewModel.loadUser(initialNombre, initialEdad, initialEmail)
+        viewModel.loadUser(
+            initialNombre,
+            initialEdad,
+            initialEmail
+        )
     }
 
     LaunchedEffect(uiState.isSaveSuccessful) {
+
         if (uiState.isSaveSuccessful) {
+
             viewModel.onSaveHandled()
+
             onSaveSuccessful()
         }
     }
@@ -54,23 +63,33 @@ fun EditProfileScreen(
             .fillMaxSize()
             .background(CineLogColors.Background)
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
                 .verticalScroll(scrollState),
+
             horizontalAlignment = Alignment.Start
         ) {
+
             Spacer(modifier = Modifier.height(40.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onNavigateBack) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                IconButton(
+                    onClick = onNavigateBack
+                ) {
+
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver",
                         tint = Color.White
                     )
                 }
+
                 Text(
                     text = "Editar perfil",
                     color = Color.White,
@@ -87,8 +106,10 @@ fun EditProfileScreen(
                     .align(Alignment.CenterHorizontally)
                     .clip(CircleShape)
                     .background(Color.White.copy(alpha = 0.1f)),
+
                 contentAlignment = Alignment.Center
             ) {
+
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
@@ -116,16 +137,19 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // CORREO DESHABILITADO
             EditInputField(
                 label = "Correo",
                 value = uiState.email,
-                onValueChange = viewModel::onEmailChange,
-                keyboardType = KeyboardType.Email
+                onValueChange = {},
+                keyboardType = KeyboardType.Email,
+                enabled = false
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Column {
+
                 Text(
                     text = "Contraseña:",
                     color = Color.White,
@@ -138,6 +162,7 @@ fun EditProfileScreen(
                 Text(
                     text = "********",
                     color = Color.White,
+
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
@@ -154,6 +179,7 @@ fun EditProfileScreen(
                 onClick = onChangePassword,
                 modifier = Modifier.align(Alignment.End)
             ) {
+
                 Text(
                     text = "Cambiar contraseña",
                     color = Color.White.copy(alpha = 0.7f),
@@ -167,16 +193,21 @@ fun EditProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 Button(
                     onClick = onNavigateBack,
+
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
+
                     shape = RoundedCornerShape(16.dp),
+
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFE53E3E)
                     )
                 ) {
+
                     Text(
                         text = "Cancelar",
                         color = Color.White,
@@ -188,21 +219,28 @@ fun EditProfileScreen(
                 Button(
                     onClick = viewModel::onSaveClick,
                     enabled = !uiState.isLoading,
+
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
+
                     shape = RoundedCornerShape(16.dp),
+
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF22C55E)
                     )
                 ) {
+
                     if (uiState.isLoading) {
+
                         CircularProgressIndicator(
                             color = Color.White,
                             modifier = Modifier.size(20.dp),
                             strokeWidth = 2.dp
                         )
+
                     } else {
+
                         Text(
                             text = "Guardar",
                             color = Color.White,
@@ -223,9 +261,12 @@ private fun EditInputField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    keyboardType: KeyboardType = KeyboardType.Text
+    keyboardType: KeyboardType = KeyboardType.Text,
+    enabled: Boolean = true
 ) {
+
     Column {
+
         Text(
             text = "$label:",
             color = Color.White,
@@ -237,20 +278,41 @@ private fun EditInputField(
 
         TextField(
             value = value,
+
             onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp),
+
+            enabled = enabled,
+
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType
+            ),
+
+            textStyle = TextStyle(
+                color = Color.White,
+                fontSize = 16.sp
+            ),
+
+            modifier = Modifier
+                .fillMaxWidth(),
+
+            shape = RoundedCornerShape(12.dp),
+
             colors = TextFieldDefaults.colors(
+
                 focusedContainerColor = CineLogColors.SearchBar,
                 unfocusedContainerColor = CineLogColors.SearchBar,
+                disabledContainerColor = CineLogColors.SearchBar,
+
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+
                 focusedTextColor = Color.White,
                 unfocusedTextColor = Color.White,
+                disabledTextColor = Color.White.copy(alpha = 0.9f),
+
                 cursorColor = Color.White
             )
         )

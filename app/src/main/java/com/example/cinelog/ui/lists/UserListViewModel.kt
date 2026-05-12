@@ -46,9 +46,21 @@ class UserListViewModel(
     fun addToList(movie: MovieItem, listType: ListType) {
         viewModelScope.launch {
             userListRepository.addMovieToList(movie, listType)
-                .onSuccess { loadAllLists() }
+                .onSuccess {
+                    if (listType == ListType.FAVORITAS) {
+                        userListRepository.addMovieToList(
+                            movie,
+                            ListType.YA_VISTO
+                        )
+                    }
+                    loadAllLists()
+                }
                 .onFailure { e ->
-                    _uiState.update { it.copy(errorMessage = e.message) }
+                    _uiState.update {
+                        it.copy(
+                            errorMessage = e.message
+                        )
+                    }
                 }
         }
     }

@@ -30,6 +30,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToLists: () -> Unit,
     onNavigateToEditProfile: (String, String, String) -> Unit = { _, _, _ -> }
 
 ) {
@@ -41,7 +42,8 @@ fun ProfileScreen(
             CinelogBottomBar(
                 currentRoute = "profile",
                 onNavigateToHome = onNavigateToHome,
-                onNavigateToProfile = onNavigateToProfile
+                onNavigateToProfile = onNavigateToProfile,
+                onNavigateToLists = onNavigateToLists
             )
         }
     ) { padding ->
