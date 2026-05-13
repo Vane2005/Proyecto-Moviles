@@ -6,4 +6,5 @@ data class Review(
     val posterPath: String = "",
     val calificacion: Int = 0,
     val reseña: String = "",
+    val etiquetas: String = ""
 )
