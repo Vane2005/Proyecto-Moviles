@@ -25,6 +25,7 @@ import com.example.cinelog.ui.editProfile.EditProfileScreen
 import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
 import com.example.cinelog.ui.review.ReviewScreen
+import com.example.cinelog.ui.review.UserReviewsScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -39,8 +40,9 @@ private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
 private const val ROUTE_CHANGE_PASSWORD = "change_password"
 private const val ROUTE_USER_LISTS = "user_lists"
 private const val ROUTE_REVIEW = "review/{movieId}/{titulo}/{posterPath}"
+private const val ROUTE_USER_REVIEWS = "user_reviews"
 
-private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail", "review")
+private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
 
 @Composable
 fun CinelogApp() {
@@ -188,7 +190,19 @@ fun CinelogApp() {
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onNavigateToEditProfile = { n, ed, em ->
                         navController.navigate("edit_profile/${URLEncoder.encode(n, "UTF-8")}/${URLEncoder.encode(ed, "UTF-8")}/${URLEncoder.encode(em, "UTF-8")}")
+                    },
+                    onNavigateToMyReviews = {
+                        navController.navigate(ROUTE_USER_REVIEWS)
                     }
+                )
+            }
+
+            composable(route = ROUTE_USER_REVIEWS) {
+                UserReviewsScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToHome = { navigateToSection(ROUTE_HOME) },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
                 )
             }
 
