@@ -14,6 +14,30 @@ class ReviewRepository {
         firestore.collection("users").document(it)
     }
 
+    suspend fun getReview(movieId: Int): Result<Review?> {
+        return try {
+            val doc = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            if (movieId == 0) {
+                return Result.failure(Exception("movieId inválido"))
+            }
+
+            val snapshot = doc.collection("reviews")
+                .document(movieId.toString())
+                .get()
+                .await()
+
+            if (!snapshot.exists()) {
+                Result.success(null)
+            } else {
+                Result.success(snapshot.toObject(Review::class.java))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun saveReview(review: Review): Result<Boolean> {
         return try {
             val doc = getUserDocument()
