@@ -38,6 +38,22 @@ class ReviewRepository {
         }
     }
 
+    suspend fun getAllReviews(): Result<List<Review>> {
+        return try {
+            val doc = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            val snapshot = doc.collection("reviews")
+                .get()
+                .await()
+
+            val reviews = snapshot.toObjects(Review::class.java)
+            Result.success(reviews)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun saveReview(review: Review): Result<Boolean> {
         return try {
             val doc = getUserDocument()

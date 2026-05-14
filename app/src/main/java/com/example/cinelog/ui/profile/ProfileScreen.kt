@@ -31,8 +31,8 @@ fun ProfileScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit,
-    onNavigateToEditProfile: (String, String, String) -> Unit = { _, _, _ -> }
-
+    onNavigateToEditProfile: (String, String, String) -> Unit = { _, _, _ -> },
+    onNavigateToMyReviews: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -106,7 +106,8 @@ fun ProfileScreen(
             // Opciones de menú
             ProfileMenuItem(
                 icon = Icons.Default.Star,
-                title = "Mis reseñas"
+                title = "Mis reseñas",
+                onClick = onNavigateToMyReviews
             )
             Spacer(modifier = Modifier.height(8.dp))
             ProfileMenuItem(
