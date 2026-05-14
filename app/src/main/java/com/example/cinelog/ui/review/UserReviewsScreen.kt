@@ -100,7 +100,10 @@ fun UserReviewsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(uiState.reviews) { review ->
-                    ReviewItemCard(review = review)
+                    ReviewItemCard(
+                        review = review,
+                        onDeleteClick = { viewModel.deleteReview(review.movieId) }
+                    )
                 }
             }
         }
@@ -108,7 +111,7 @@ fun UserReviewsScreen(
 }
 
 @Composable
-fun ReviewItemCard(review: Review) {
+fun ReviewItemCard(review: Review,onDeleteClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -178,7 +181,7 @@ fun ReviewItemCard(review: Review) {
                         icon = Icons.Default.Delete,
                         text = "Eliminar",
                         color = CineLogColors.Error,
-                        onClick = {}
+                        onClick = onDeleteClick
                     )
                 }
             }

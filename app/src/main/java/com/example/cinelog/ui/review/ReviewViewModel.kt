@@ -84,4 +84,30 @@ class ReviewViewModel(
             }
         }
     }
+
+    fun deleteReview(movieId: Int) {
+        viewModelScope.launch {
+            reviewRepository.deleteReview(movieId)
+                .onSuccess {
+                    // recargar la lista después de eliminar
+                    loadReviews()
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(errorMessage = e.message) }
+                }
+        }
+    }
+
+    fun loadReviews() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            reviewRepository.getReviews()
+                .onSuccess { reviews ->
+                    _uiState.update { it.copy(isLoading = false, reviews = reviews) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                }
+        }
+    }
 }
