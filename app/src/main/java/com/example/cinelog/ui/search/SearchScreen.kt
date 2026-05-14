@@ -43,12 +43,6 @@ fun SearchScreen(
     Scaffold(
         containerColor = CineLogColors.Background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            SearchHeader(
-                query = uiState.query,
-                onQueryChange = viewModel::onQueryChange
-            )
-        },
         bottomBar = {
             CinelogBottomBar(
                 currentRoute = "search",
@@ -63,11 +57,17 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Se coloca aquí para que use el mismo padding del Scaffold que el HomeScreen
+            SearchHeader(
+                query = uiState.query,
+                onQueryChange = viewModel::onQueryChange
+            )
+
             if (uiState.query.isEmpty()) {
                 EmptySearchState(
                     icon = Icons.Default.Movie,
                     title = "Busca tus películas favoritas",
-                    subtitle = "Encuentra detalles, guarda en tu lista y reseña cada experiencia de cine"
+                    subtitle = "Explora, reseña y organiza tu colección personal de películas en un solo lugar."
                 )
             } else if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -162,32 +162,27 @@ fun SearchHeader(
     query: String,
     onQueryChange: (String) -> Unit
 ) {
-    Surface(
-        color = CineLogColors.Background,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            placeholder = { Text("Buscar película...", color = CineLogColors.SearchText) },
-            leadingIcon = {
-                Icon(Icons.Default.Search, contentDescription = null, tint = CineLogColors.SearchText)
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = CineLogColors.SearchBar,
-                focusedContainerColor   = CineLogColors.SearchBar,
-                unfocusedTextColor      = Color.White,
-                focusedTextColor        = Color.White,
-                unfocusedBorderColor    = CineLogColors.SearchBar,
-                focusedBorderColor      = CineLogColors.NavIconActive,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(12.dp),
-            singleLine = true
-        )
-    }
+    OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        placeholder = { Text("Buscar película...", color = CineLogColors.SearchText) },
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = null, tint = CineLogColors.SearchText)
+        },
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = CineLogColors.SearchBar,
+            focusedContainerColor   = CineLogColors.SearchBar,
+            unfocusedTextColor      = Color.White,
+            focusedTextColor        = Color.White,
+            unfocusedBorderColor    = CineLogColors.SearchBar,
+            focusedBorderColor      = CineLogColors.NavIconActive,
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true
+    )
 }
 
 @Composable
