@@ -1,6 +1,7 @@
 package com.example.cinelog.ui.home
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -32,7 +33,8 @@ fun HomeScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
-    onNavigateToMovieDetail: (Int) -> Unit = {}
+    onNavigateToMovieDetail: (Int) -> Unit = {},
+    onNavigateToSearch: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -55,7 +57,7 @@ fun HomeScreen(
                 .padding(padding)
         ) {
             item {
-                SearchBar()
+                SearchBar(onClick = onNavigateToSearch)
 
                 uiState.featuredMovie?.let {
                     FeaturedBanner(movie = it, onClick = { onNavigateToMovieDetail(it.id) })
@@ -77,13 +79,12 @@ fun HomeScreen(
 }
 
 @Composable
-fun SearchBar() {
-    var query by remember { mutableStateOf("") }
-    
+fun SearchBar(onClick: () -> Unit) {
     OutlinedTextField(
-        value = query,
-        onValueChange = { query = it },
-        placeholder = { Text("Buscar...", color = CineLogColors.SearchText) },
+        value = "",
+        onValueChange = { },
+        readOnly = true,
+        placeholder = { Text("Buscar película...", color = CineLogColors.SearchText) },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = CineLogColors.SearchText)
         },
@@ -94,12 +95,22 @@ fun SearchBar() {
             focusedTextColor        = CineLogColors.SearchText,
             unfocusedBorderColor    = CineLogColors.SearchBar,
             focusedBorderColor      = CineLogColors.NavIconActive,
+            disabledBorderColor     = CineLogColors.SearchBar,
+            disabledPlaceholderColor = CineLogColors.SearchText,
+            disabledLeadingIconColor = CineLogColors.SearchText,
+            disabledContainerColor = CineLogColors.SearchBar
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(20.dp),
-        singleLine = true
+            .padding(16.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true,
+        enabled = false
     )
 }
 
