@@ -39,4 +39,14 @@ class UserReviewsViewModel(
                 }
         }
     }
+
+    fun deleteReview(movieId: Int) {
+        viewModelScope.launch {
+            reviewRepository.deleteReview(movieId)
+                .onSuccess { loadReviews() }
+                .onFailure { e ->
+                    _uiState.update { it.copy(errorMessage = e.message) }
+                }
+        }
+    }
 }

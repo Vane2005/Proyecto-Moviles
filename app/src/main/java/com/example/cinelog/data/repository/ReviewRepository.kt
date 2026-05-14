@@ -81,4 +81,33 @@ class ReviewRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun deleteReview(movieId: Int): Result<Boolean> {
+        return try {
+            val doc = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            doc.collection("reviews")
+                .document(movieId.toString())
+                .delete()
+                .await()
+
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getReviews(): Result<List<Review>> {
+        return try {
+            val doc = getUserDocument()
+                ?: return Result.failure(Exception("Usuario no autenticado"))
+
+            val snapshot = doc.collection("reviews").get().await()
+            val reviews = snapshot.toObjects(Review::class.java)
+            Result.success(reviews)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
