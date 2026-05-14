@@ -26,6 +26,7 @@ import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
 import com.example.cinelog.ui.review.ReviewScreen
 import com.example.cinelog.ui.review.UserReviewsScreen
+import com.example.cinelog.ui.search.SearchScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -34,6 +35,7 @@ private const val ROUTE_LOGIN_BASE = "login"
 private const val ROUTE_LOGIN_FULL = "login?successMessage={successMessage}"
 private const val ROUTE_REGISTER = "register"
 private const val ROUTE_HOME = "home"
+private const val ROUTE_SEARCH = "search"
 private const val ROUTE_PROFILE = "profile"
 private const val ROUTE_DETAIL = "detail/{movieId}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
@@ -42,7 +44,7 @@ private const val ROUTE_USER_LISTS = "user_lists"
 private const val ROUTE_REVIEW = "review/{movieId}/{titulo}/{posterPath}"
 private const val ROUTE_USER_REVIEWS = "user_reviews"
 
-private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
+private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_SEARCH, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
 
 @Composable
 fun CinelogApp() {
@@ -132,7 +134,22 @@ fun CinelogApp() {
                     onNavigateToHome = { },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") },
-                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
+                    onNavigateToSearch = { navController.navigate(ROUTE_SEARCH) }
+                )
+            }
+
+            composable(route = ROUTE_SEARCH) {
+                SearchScreen(
+                    onNavigateToHome = {
+                        navController.navigate(ROUTE_HOME) {
+                            popUpTo(ROUTE_HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    },
+                    onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
+                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") }
                 )
             }
 
@@ -144,7 +161,7 @@ fun CinelogApp() {
                 MovieDetailScreen(
                     movieId = movieId,
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToHome = { 
+                    onNavigateToHome = {
                         navController.navigate(ROUTE_HOME) {
                             popUpTo(ROUTE_HOME) { inclusive = false }
                             launchSingleTop = true
