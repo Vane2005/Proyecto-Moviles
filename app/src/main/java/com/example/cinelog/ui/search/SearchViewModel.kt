@@ -23,10 +23,18 @@ class SearchViewModel(
 
     fun onQueryChange(query: String) {
         searchJob?.cancel()
-        _uiState.update { it.copy(query = query, errorMessage = null) }
+        _uiState.update { 
+            it.copy(
+                query = query, 
+                errorMessage = null, 
+                results = emptyList(), 
+                currentPage = 1,
+                totalPages = 1
+            ) 
+        }
         
         if (query.isBlank()) {
-            _uiState.update { it.copy(results = emptyList(), isLoading = false) }
+            _uiState.update { it.copy(isLoading = false) }
             return
         }
         
@@ -35,15 +43,43 @@ class SearchViewModel(
 
     private fun search(query: String) {
         searchJob = viewModelScope.launch {
-            // Un pequeño delay para evitar búsquedas excesivas mientras se escribe (debouncing)
             delay(300)
             _uiState.update { it.copy(isLoading = true) }
-            movieRepository.searchMovies(query)
-                .onSuccess { movies ->
-                    _uiState.update { it.copy(isLoading = false, results = movies) }
+            movieRepository.searchMovies(query, page = 1)
+                .onSuccess { response ->
+                    _uiState.update { it.copy(
+                        isLoading = false, 
+                        results = response.results,
+                        currentPage = response.page,
+                        totalPages = response.totalPages
+                    ) }
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = e.message) }
+                }
+        }
+    }
+
+    fun loadNextPage() {
+        val currentState = _uiState.value
+        if (currentState.isLoading || currentState.isLoadingMore || currentState.currentPage >= currentState.totalPages) {
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMore = true) }
+            val nextPage = currentState.currentPage + 1
+            movieRepository.searchMovies(currentState.query, page = nextPage)
+                .onSuccess { response ->
+                    _uiState.update { it.copy(
+                        isLoadingMore = false,
+                        results = it.results + response.results,
+                        currentPage = response.page,
+                        totalPages = response.totalPages
+                    ) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoadingMore = false, errorMessage = e.message) }
                 }
         }
     }

@@ -35,6 +35,7 @@ private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 @Composable
 fun ReviewScreen(
     movieId: Int,
+    mediaType: String,
     titulo: String,
     posterPath: String,
     viewModel: ReviewViewModel = viewModel(),
@@ -208,7 +209,7 @@ fun ReviewScreen(
                 }
 
                 Button(
-                    onClick = { viewModel.saveReview(movieId, titulo, posterPath) },
+                    onClick = { viewModel.saveReview(movieId, mediaType, titulo, posterPath) },
                     modifier = Modifier
                         .weight(1f)
                         .height(56.dp),

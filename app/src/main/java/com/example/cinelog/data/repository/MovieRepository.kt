@@ -3,6 +3,7 @@ package com.example.cinelog.data.repository
 import com.example.cinelog.data.model.CreditsResponse
 import com.example.cinelog.data.model.Movie
 import com.example.cinelog.data.model.MovieDetail
+import com.example.cinelog.data.model.MovieResponse
 import com.example.cinelog.data.model.TvDetail
 import com.example.cinelog.data.network.RetrofitClient
 
@@ -46,17 +47,25 @@ class MovieRepository {
 
     suspend fun getTvDetail(id: Int): Result<TvDetail> {
         return try {
-            Result.success(api.getTvDetail(id))
+            Result.success(api.getTvDetail(id, appendToResponse = null))
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun searchMovies(query: String): Result<List<Movie>> {
+    suspend fun searchMovies(query: String, page: Int = 1): Result<MovieResponse> {
         return try {
-            if (query.isBlank()) return Result.success(emptyList())
-            val response = api.searchMovies(query)
-            Result.success(response.results)
+            if (query.isBlank()) return Result.success(MovieResponse(1, emptyList(), 0, 0))
+            val response = api.searchMulti(query, page)
+            
+            // Filtramos para mostrar solo películas y series (media_type "movie" o "tv")
+            // También incluimos aquellos que no tengan media_type por si la API no lo envía en algún caso,
+            // pero que tengan título o nombre.
+            val filteredResults = response.results.filter { 
+                it.mediaType == "movie" || it.mediaType == "tv" || it.mediaType == null
+            }
+            
+            Result.success(response.copy(results = filteredResults))
         } catch (e: Exception) {
             Result.failure(e)
         }

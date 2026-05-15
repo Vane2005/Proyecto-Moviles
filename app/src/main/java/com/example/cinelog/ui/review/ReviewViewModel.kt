@@ -34,7 +34,7 @@ class ReviewViewModel(
         _uiState.update { it.copy(etiquetas = value) }
     }
 
-    fun saveReview(movieId: Int, titulo: String, posterPath: String) {
+    fun saveReview(movieId: Int, mediaType: String, titulo: String, posterPath: String) {
         val state = _uiState.value
 
         if (state.calificacion == 0) {
@@ -56,27 +56,25 @@ class ReviewViewModel(
                 posterPath = posterPath,
                 calificacion = state.calificacion,
                 reseña = state.reseña,
-                etiquetas = state.etiquetas
+                etiquetas = state.etiquetas,
+                mediaType = mediaType
             )
 
-            // Guardar la reseña
             val reviewResult = reviewRepository.saveReview(review)
             
             if (reviewResult.isSuccess) {
-                // Si la reseña se guarda, también la marcamos como "Ya vista"
                 val movieItem = MovieItem(
                     movieId = movieId,
                     titulo = titulo,
-                    posterPath = posterPath
+                    posterPath = posterPath,
+                    mediaType = mediaType
                 )
                 
                 userListRepository.addMovieToList(movieItem, ListType.YA_VISTO)
                     .onSuccess {
                         _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
                     }
-                    .onFailure { e ->
-                        // Aunque falle agregar a la lista, la reseña ya se guardó. 
-                        // Pero para ser consistentes, informamos del error si es crítico.
+                    .onFailure {
                         _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
                     }
             } else {
@@ -85,13 +83,10 @@ class ReviewViewModel(
         }
     }
 
-    fun deleteReview(movieId: Int) {
+    fun deleteReview(movieId: Int, mediaType: String) {
         viewModelScope.launch {
-            reviewRepository.deleteReview(movieId)
-                .onSuccess {
-                    // recargar la lista después de eliminar
-                    loadReviews()
-                }
+            reviewRepository.deleteReview(movieId, mediaType)
+                .onSuccess { loadReviews() }
                 .onFailure { e ->
                     _uiState.update { it.copy(errorMessage = e.message) }
                 }

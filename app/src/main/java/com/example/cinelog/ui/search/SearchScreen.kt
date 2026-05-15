@@ -5,8 +5,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -36,9 +38,10 @@ fun SearchScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
-    onNavigateToMovieDetail: (Int) -> Unit = {}
+    onNavigateToMovieDetail: (Int, String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
 
     Scaffold(
         containerColor = CineLogColors.Background,
@@ -57,19 +60,20 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Se coloca aquí para que use el mismo padding del Scaffold que el HomeScreen
             SearchHeader(
                 query = uiState.query,
                 onQueryChange = viewModel::onQueryChange
             )
 
-            if (uiState.query.isEmpty()) {
+            if (uiState.errorMessage != null) {
+                ErrorState(message = uiState.errorMessage!!)
+            } else if (uiState.query.isEmpty()) {
                 EmptySearchState(
                     icon = Icons.Default.Movie,
-                    title = "Busca tus películas favoritas",
-                    subtitle = "Explora, reseña y organiza tu colección personal de películas en un solo lugar."
+                    title = "Busca tus películas o series",
+                    subtitle = "Explora, reseña y organiza tu colección personal en un solo lugar."
                 )
-            } else if (uiState.isLoading) {
+            } else if (uiState.isLoading && uiState.results.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = CineLogColors.NavIconActive)
                 }
@@ -77,7 +81,7 @@ fun SearchScreen(
                 EmptySearchState(
                     icon = Icons.Default.Search,
                     title = "Sin resultados",
-                    subtitle = "No pudimos encontrar películas que coincidan con \"${uiState.query}\""
+                    subtitle = "No pudimos encontrar nada que coincida con \"${uiState.query}\""
                 )
             } else {
                 Text(
@@ -91,13 +95,14 @@ fun SearchScreen(
                 HorizontalDivider(color = CineLogColors.SearchBar, thickness = 0.5.dp)
 
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
                     items(uiState.results) { movie ->
                         MovieSearchItem(
                             movie = movie,
-                            onClick = { onNavigateToMovieDetail(movie.id) }
+                            onClick = { onNavigateToMovieDetail(movie.id, movie.mediaType ?: "movie") }
                         )
                         HorizontalDivider(
                             modifier = Modifier.padding(horizontal = 16.dp),
@@ -105,9 +110,57 @@ fun SearchScreen(
                             color = CineLogColors.SearchBar
                         )
                     }
+
+                    // Botón para cargar más resultados manualmente
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (uiState.isLoadingMore) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    color = CineLogColors.NavIconActive,
+                                    strokeWidth = 3.dp
+                                )
+                            } else if (uiState.currentPage < uiState.totalPages) {
+                                Button(
+                                    onClick = { viewModel.loadNextPage() },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = CineLogColors.SearchBar,
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "Mostrar más resultados",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ErrorState(message: String) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = Color.Red, modifier = Modifier.size(48.dp))
+        Spacer(Modifier.height(16.dp))
+        Text(text = "Error de búsqueda", color = Color.White, fontWeight = FontWeight.Bold)
+        Text(text = message, color = CineLogColors.SearchText, textAlign = TextAlign.Center, fontSize = 14.sp)
     }
 }
 
@@ -165,7 +218,7 @@ fun SearchHeader(
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
-        placeholder = { Text("Buscar película...", color = CineLogColors.SearchText) },
+        placeholder = { Text("Buscar película o serie...", color = CineLogColors.SearchText) },
         leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = null, tint = CineLogColors.SearchText)
         },
@@ -199,7 +252,7 @@ fun MovieSearchItem(
     ) {
         AsyncImage(
             model = IMAGE_BASE + (movie.posterPath ?: ""),
-            contentDescription = movie.title,
+            contentDescription = movie.displayTitle,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .width(70.dp)
@@ -215,16 +268,19 @@ fun MovieSearchItem(
         ) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(
-                    text = movie.title,
+                    text = movie.displayTitle,
                     color = Color.White,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f, fill = false)
+                    modifier = Modifier.weight(1f, fill = false),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
-                if (movie.releaseDate.length >= 4) {
+                val date = movie.displayDate
+                if (date.length >= 4) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = movie.releaseDate.take(4),
+                        text = date.take(4),
                         color = CineLogColors.SearchText,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Light
@@ -232,10 +288,24 @@ fun MovieSearchItem(
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            val typeText = when(movie.mediaType) {
+                "tv" -> "Serie de TV"
+                "movie" -> "Película"
+                else -> ""
+            }
+            if (typeText.isNotEmpty()) {
+                Text(
+                    text = typeText,
+                    color = CineLogColors.NavIconActive,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = movie.overview,
+                text = movie.safeOverview,
                 color = CineLogColors.SearchText,
                 fontSize = 13.sp,
                 maxLines = 3,
