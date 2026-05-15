@@ -39,7 +39,8 @@ fun UserReviewsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToLists: () -> Unit
+    onNavigateToLists: () -> Unit,
+    onReviewClick: (Int, String) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -101,8 +102,7 @@ fun UserReviewsScreen(
             ) {
                 items(uiState.reviews) { review ->
                     ReviewItemCard(
-                        review = review,
-                        onDeleteClick = { viewModel.deleteReview(review.movieId) }
+                        review = review
                     )
                 }
             }
@@ -111,7 +111,9 @@ fun UserReviewsScreen(
 }
 
 @Composable
-fun ReviewItemCard(review: Review,onDeleteClick: () -> Unit) {
+fun ReviewItemCard(
+    review: Review
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -157,6 +159,13 @@ fun ReviewItemCard(review: Review,onDeleteClick: () -> Unit) {
                         )
                     }
                 }
+                
+                val typeText = if (review.mediaType == "tv") "Serie" else "Película"
+                Text(
+                    text = typeText,
+                    color = Color.White.copy(alpha = 0.5f),
+                    fontSize = 12.sp
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -181,7 +190,7 @@ fun ReviewItemCard(review: Review,onDeleteClick: () -> Unit) {
                         icon = Icons.Default.Delete,
                         text = "Eliminar",
                         color = CineLogColors.Error,
-                        onClick = onDeleteClick
+                        onClick = {}
                     )
                 }
             }

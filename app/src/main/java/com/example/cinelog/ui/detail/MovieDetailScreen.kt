@@ -45,6 +45,7 @@ private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
+    mediaType: String,
     onNavigateBack: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
@@ -58,8 +59,8 @@ fun MovieDetailScreen(
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(movieId) {
-        viewModel.loadMovieDetail(movieId)
+    LaunchedEffect(movieId, mediaType) {
+        viewModel.loadDetail(movieId, mediaType)
     }
 
     LaunchedEffect(uiState.successMessage) {
@@ -85,10 +86,9 @@ fun MovieDetailScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = CineLogColors.NavIconActive)
             }
-        } else if (uiState.movie != null) {
-            val movie = uiState.movie!!
-
-            val trailerKey = movie.videos?.results?.find {
+        } else if (uiState.movie != null || uiState.tvShow != null) {
+            
+            val trailerKey = uiState.movie?.videos?.results?.find {
                 it.site == "YouTube" && (it.type == "Trailer" || it.type == "Teaser")
             }?.key
 
@@ -98,10 +98,9 @@ fun MovieDetailScreen(
                         .fillMaxSize()
                         .verticalScroll(scrollState)
                 ) {
-                    // Header: Backdrop con degradado suave
                     Box(modifier = Modifier.fillMaxWidth().height(280.dp)) {
                         AsyncImage(
-                            model = BACKDROP_BASE + (movie.backdropPath ?: ""),
+                            model = BACKDROP_BASE + (uiState.displayBackdrop ?: ""),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -127,7 +126,6 @@ fun MovieDetailScreen(
                         }
                     }
 
-                    // Información principal (Poster y Textos)
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 24.dp)
@@ -140,7 +138,7 @@ fun MovieDetailScreen(
                                 elevation = CardDefaults.cardElevation(12.dp)
                             ) {
                                 AsyncImage(
-                                    model = IMAGE_BASE + (movie.posterPath ?: ""),
+                                    model = IMAGE_BASE + (uiState.displayPoster ?: ""),
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize()
@@ -151,12 +149,12 @@ fun MovieDetailScreen(
 
                             Column(modifier = Modifier.padding(bottom = 8.dp)) {
                                 Text(
-                                    text = movie.title,
+                                    text = uiState.displayTitle,
                                     color = Color.White,
-                                    fontSize = 26.sp,
+                                    fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold,
-                                    lineHeight = 32.sp,
-                                    maxLines = 2,
+                                    lineHeight = 30.sp,
+                                    maxLines = 3,
                                     overflow = TextOverflow.Ellipsis
                                 )
 
@@ -169,15 +167,16 @@ fun MovieDetailScreen(
                                     Column {
                                         Text("Año", color = Color.White, fontSize = 16.sp)
                                         Text(
-                                            text = movie.releaseDate?.take(4) ?: "N/A",
+                                            text = uiState.displayDate.take(4).ifEmpty { "N/A" },
                                             color = Color.White.copy(alpha = 0.6f),
                                             fontSize = 14.sp
                                         )
                                     }
                                     Column(horizontalAlignment = Alignment.End) {
-                                        Text("Dirigido por", color = Color.White, fontSize = 14.sp)
+                                        val label = if (mediaType == "movie") "Dirigido por" else "Tipo"
+                                        Text(label, color = Color.White, fontSize = 14.sp)
                                         Text(
-                                            text = uiState.director ?: "Buscando...",
+                                            text = uiState.director ?: "N/A",
                                             color = Color.White.copy(alpha = 0.6f),
                                             fontSize = 12.sp,
                                             maxLines = 1,
@@ -189,44 +188,63 @@ fun MovieDetailScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // Boton para el Trailer
-                                    Button(
-                                        onClick = {
-                                            trailerKey?.let {
-                                                uriHandler.openUri("https://www.youtube.com/watch?v=$it")
-                                            }
-                                        },
-                                        enabled = trailerKey != null,
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
-                                        shape = RoundedCornerShape(12.dp),
-                                        contentPadding = PaddingValues(horizontal = 16.dp),
-                                        modifier = Modifier.height(36.dp)
-                                    ) {
-                                        Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(20.dp))
-                                        Spacer(modifier = Modifier.width(4.dp))
+                                    if (mediaType == "movie") {
+                                        Button(
+                                            onClick = {
+                                                trailerKey?.let {
+                                                    uriHandler.openUri("https://www.youtube.com/watch?v=$it")
+                                                }
+                                            },
+                                            enabled = trailerKey != null,
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
+                                            shape = RoundedCornerShape(12.dp),
+                                            contentPadding = PaddingValues(horizontal = 16.dp),
+                                            modifier = Modifier.height(36.dp)
+                                        ) {
+                                            Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(20.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = if (trailerKey != null) "Trailer" else "Sin trailer",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
                                         Text(
-                                            text = if (trailerKey != null) "Trailer" else "Sin trailer",
-                                            fontWeight = FontWeight.Bold,
+                                            text = "${uiState.movie?.runtime ?: 0} mins",
+                                            color = Color.White.copy(alpha = 0.6f),
+                                            fontSize = 13.sp
+                                        )
+                                    } else {
+                                        Surface(
+                                            color = CineLogColors.NavIconActive.copy(alpha = 0.2f),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Text(
+                                                text = "Serie de TV",
+                                                color = CineLogColors.NavIconActive,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text(
+                                            text = "Rating: ${String.format("%.1f", uiState.displayVoteAverage)}",
+                                            color = Color.White.copy(alpha = 0.6f),
                                             fontSize = 13.sp
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = "${movie.runtime ?: 0} mins",
-                                        color = Color.White.copy(alpha = 0.6f),
-                                        fontSize = 13.sp
-                                    )
                                 }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Sinopsis
                         Text("Sinopsis", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = movie.overview,
+                            text = uiState.displayOverview.ifEmpty { "No hay sinopsis disponible." },
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 15.sp,
                             lineHeight = 24.sp
@@ -236,7 +254,6 @@ fun MovieDetailScreen(
                     Spacer(modifier = Modifier.height(140.dp))
                 }
 
-                // Botones de acción inferiores con feedback visual y menú moderno
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -248,19 +265,16 @@ fun MovieDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        // Botón Reseña con feedback
                         AnimatedActionButton(
                             text = "Reseña",
                             icon = Icons.Default.Star,
                             modifier = Modifier.weight(1f),
                             onClick = { 
-                                onNavigateToReview(movie.id, movie.title, movie.posterPath ?: "")
+                                onNavigateToReview(uiState.displayId, uiState.displayTitle, uiState.displayPoster ?: "")
                             }
                         )
 
-                        // Contenedor para el botón Agregar y su menú
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.BottomCenter) {
-                            // Menú desplegable moderno (Overlay)
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = uiState.showAddOptions,
                                 enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn() + scaleIn(initialScale = 0.8f),
@@ -299,7 +313,6 @@ fun MovieDetailScreen(
                                 }
                             }
 
-                            // Botón Agregar estático con feedback de escala
                             AnimatedActionButton(
                                 text = if (uiState.showAddOptions) "Cerrar" else "Agregar",
                                 icon = if (uiState.showAddOptions) Icons.Default.Close else Icons.Default.Add,
@@ -324,7 +337,6 @@ fun AnimatedActionButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    // Animación elástica de escala al pulsar
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.94f else 1f,
         animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f),

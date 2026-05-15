@@ -37,11 +37,11 @@ private const val ROUTE_REGISTER = "register"
 private const val ROUTE_HOME = "home"
 private const val ROUTE_SEARCH = "search"
 private const val ROUTE_PROFILE = "profile"
-private const val ROUTE_DETAIL = "detail/{movieId}"
+private const val ROUTE_DETAIL = "detail/{movieId}/{mediaType}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
 private const val ROUTE_CHANGE_PASSWORD = "change_password"
 private const val ROUTE_USER_LISTS = "user_lists"
-private const val ROUTE_REVIEW = "review/{movieId}/{titulo}/{posterPath}"
+private const val ROUTE_REVIEW = "review/{movieId}/{mediaType}/{titulo}/{posterPath}"
 private const val ROUTE_USER_REVIEWS = "user_reviews"
 
 private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_SEARCH, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
@@ -133,7 +133,7 @@ fun CinelogApp() {
                 HomeScreen(
                     onNavigateToHome = { },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
-                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") },
+                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId/movie") },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onNavigateToSearch = { navController.navigate(ROUTE_SEARCH) }
                 )
@@ -149,17 +149,22 @@ fun CinelogApp() {
                     },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
-                    onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId") }
+                    onNavigateToMovieDetail = { movieId, mediaType -> navController.navigate("detail/$movieId/$mediaType") }
                 )
             }
 
             composable(
                 route = ROUTE_DETAIL,
-                arguments = listOf(navArgument("movieId") { type = NavType.IntType })
+                arguments = listOf(
+                    navArgument("movieId") { type = NavType.IntType },
+                    navArgument("mediaType") { type = NavType.StringType }
+                )
             ) { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
+                val mediaType = backStackEntry.arguments?.getString("mediaType") ?: "movie"
                 MovieDetailScreen(
                     movieId = movieId,
+                    mediaType = mediaType,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = {
                         navController.navigate(ROUTE_HOME) {
@@ -172,7 +177,7 @@ fun CinelogApp() {
                     onNavigateToReview = { id: Int, title: String, poster: String ->
                         val encodedTitle = URLEncoder.encode(title, "UTF-8")
                         val encodedPoster = URLEncoder.encode(poster, "UTF-8")
-                        navController.navigate("review/$id/$encodedTitle/$encodedPoster")
+                        navController.navigate("review/$id/$mediaType/$encodedTitle/$encodedPoster")
                     }
                 )
             }
@@ -181,16 +186,19 @@ fun CinelogApp() {
                 route = ROUTE_REVIEW,
                 arguments = listOf(
                     navArgument("movieId") { type = NavType.IntType },
+                    navArgument("mediaType") { type = NavType.StringType },
                     navArgument("titulo") { type = NavType.StringType },
                     navArgument("posterPath") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getInt("movieId") ?: 0
+                val mediaType = backStackEntry.arguments?.getString("mediaType") ?: "movie"
                 val titulo = URLDecoder.decode(backStackEntry.arguments?.getString("titulo") ?: "", "UTF-8")
                 val posterPath = URLDecoder.decode(backStackEntry.arguments?.getString("posterPath") ?: "", "UTF-8")
                 
                 ReviewScreen(
                     movieId = movieId,
+                    mediaType = mediaType,
                     titulo = titulo,
                     posterPath = posterPath,
                     onNavigateBack = { navController.popBackStack() },
@@ -219,7 +227,10 @@ fun CinelogApp() {
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
-                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) }
+                    onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
+                    onReviewClick = { movieId, mediaType ->
+                        navController.navigate("detail/$movieId/$mediaType")
+                    }
                 )
             }
 
@@ -255,8 +266,8 @@ fun CinelogApp() {
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToLists = {},
-                    onMovieClick = { movieId ->
-                        navController.navigate("detail/$movieId")
+                    onMovieClick = { movieId, mediaType ->
+                        navController.navigate("detail/$movieId/$mediaType")
                     }
                 )
             }

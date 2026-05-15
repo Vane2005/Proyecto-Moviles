@@ -30,7 +30,7 @@ class UserReviewsViewModel(
     fun loadReviews() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            reviewRepository.getAllReviews()
+            reviewRepository.getReviews()
                 .onSuccess { reviews ->
                     _uiState.update { it.copy(reviews = reviews, isLoading = false) }
                 }
@@ -40,9 +40,9 @@ class UserReviewsViewModel(
         }
     }
 
-    fun deleteReview(movieId: Int) {
+    fun deleteReview(movieId: Int, mediaType: String) {
         viewModelScope.launch {
-            reviewRepository.deleteReview(movieId)
+            reviewRepository.deleteReview(movieId, mediaType)
                 .onSuccess { loadReviews() }
                 .onFailure { e ->
                     _uiState.update { it.copy(errorMessage = e.message) }

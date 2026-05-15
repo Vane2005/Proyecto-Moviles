@@ -14,17 +14,15 @@ class ReviewRepository {
         firestore.collection("users").document(it)
     }
 
-    suspend fun getReview(movieId: Int): Result<Review?> {
+    private fun getDocId(movieId: Int, mediaType: String) = "${mediaType}_$movieId"
+
+    suspend fun getReview(movieId: Int, mediaType: String): Result<Review?> {
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
-            if (movieId == 0) {
-                return Result.failure(Exception("movieId inválido"))
-            }
-
             val snapshot = doc.collection("reviews")
-                .document(movieId.toString())
+                .document(getDocId(movieId, mediaType))
                 .get()
                 .await()
 
@@ -38,41 +36,17 @@ class ReviewRepository {
         }
     }
 
-    suspend fun getAllReviews(): Result<List<Review>> {
-        return try {
-            val doc = getUserDocument()
-                ?: return Result.failure(Exception("Usuario no autenticado"))
-
-            val snapshot = doc.collection("reviews")
-                .get()
-                .await()
-
-            val reviews = snapshot.toObjects(Review::class.java)
-            Result.success(reviews)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
     suspend fun saveReview(review: Review): Result<Boolean> {
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
             if (review.movieId == 0) {
-                return Result.failure(Exception("movieId inválido"))
-            }
-
-            if (review.calificacion !in 1..5) {
-                return Result.failure(Exception("La calificación debe estar entre 1 y 5"))
-            }
-
-            if (review.reseña.isBlank()) {
-                return Result.failure(Exception("La reseña no puede estar vacía"))
+                return Result.failure(Exception("ID inválido"))
             }
 
             doc.collection("reviews")
-                .document(review.movieId.toString())
+                .document(getDocId(review.movieId, review.mediaType))
                 .set(review)
                 .await()
 
@@ -82,13 +56,13 @@ class ReviewRepository {
         }
     }
 
-    suspend fun deleteReview(movieId: Int): Result<Boolean> {
+    suspend fun deleteReview(movieId: Int, mediaType: String): Result<Boolean> {
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
             doc.collection("reviews")
-                .document(movieId.toString())
+                .document(getDocId(movieId, mediaType))
                 .delete()
                 .await()
 

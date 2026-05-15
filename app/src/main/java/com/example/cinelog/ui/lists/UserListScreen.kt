@@ -37,7 +37,7 @@ fun UserListScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
-    onMovieClick: (Int) -> Unit = {}
+    onMovieClick: (Int, String) -> Unit = { _, _ -> }
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -64,7 +64,6 @@ fun UserListScreen(
 
     Scaffold(
         containerColor = CineLogColors.Background,
-
         bottomBar = {
             CinelogBottomBar(
                 currentRoute = "lists",
@@ -73,7 +72,6 @@ fun UserListScreen(
                 onNavigateToLists = onNavigateToLists
             )
         }
-
     ) { padding ->
 
         Column(
@@ -106,7 +104,6 @@ fun UserListScreen(
                     Tab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
-
                         text = {
                             Text(
                                 text = title,
@@ -118,57 +115,42 @@ fun UserListScreen(
             }
 
             if (uiState.isLoading) {
-
                 Box(
                     modifier = Modifier.weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-
                     CircularProgressIndicator(
                         color = Color.White
                     )
                 }
-
             } else {
-
                 if (currentMovies.isEmpty()) {
-
                     Box(
                         modifier = Modifier.weight(1f)
                     ) {
-
                         EmptyListState(
                             title = tabs[selectedTab]
                         )
                     }
-
                 } else {
-
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
-
                         modifier = Modifier
                             .weight(1f)
                             .padding(horizontal = 16.dp),
-
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                         horizontalArrangement = Arrangement.spacedBy(14.dp),
-
                         contentPadding = PaddingValues(
                             top = 20.dp,
                             bottom = 100.dp
                         )
                     ) {
-
                         items(currentMovies) { movie ->
-
                             MovieListCard(
                                 movie = movie,
-
                                 onMovieClick = {
-                                    onMovieClick(movie.movieId)
+                                    onMovieClick(movie.movieId, movie.mediaType)
                                 },
-
                                 onRemove = {
                                     viewModel.removeFromList(
                                         movie,
@@ -197,23 +179,18 @@ private fun MovieListCard(
             .clickable {
                 onMovieClick()
             },
-
         shape = RoundedCornerShape(20.dp),
-
         colors = CardDefaults.cardColors(
             containerColor = CineLogColors.SearchBar
         )
     ) {
 
         Column {
-
             Box {
-
                 AsyncImage(
                     model = IMAGE_BASE + movie.posterPath,
                     contentDescription = movie.titulo,
                     contentScale = ContentScale.Crop,
-
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(240.dp)
@@ -237,7 +214,6 @@ private fun MovieListCard(
                     onClick = onRemove,
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
-
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = null,
@@ -249,7 +225,6 @@ private fun MovieListCard(
             Column(
                 modifier = Modifier.padding(14.dp)
             ) {
-
                 Text(
                     text = movie.titulo,
                     color = Color.White,
@@ -258,6 +233,14 @@ private fun MovieListCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 20.sp
+                )
+                
+                // Opcional: Mostrar si es serie o película
+                val typeText = if (movie.mediaType == "tv") "Serie" else "Película"
+                Text(
+                    text = typeText,
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 12.sp
                 )
             }
         }
@@ -268,18 +251,15 @@ private fun MovieListCard(
 private fun EmptyListState(
     title: String
 ) {
-
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text(
-                text = "No hay películas en",
+                text = "No hay elementos en",
                 color = Color.White.copy(alpha = 0.7f),
                 fontSize = 16.sp
             )
