@@ -34,22 +34,64 @@ class ReviewViewModel(
         _uiState.update { it.copy(etiquetas = value) }
     }
 
-    fun saveReview(movieId: Int, mediaType: String, titulo: String, posterPath: String) {
-        val state = _uiState.value
+    fun loadReviewForMovie(movieId: Int, mediaType: String) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    isLoadingReview = true,
+                    errorMessage = null,
+                    isSaveSuccessful = false,
+                    successToastMessage = null,
+                    hasExistingReview = false,
+                    calificacion = 0,
+                    reseña = "",
+                    etiquetas = ""
+                )
+            }
 
-        if (state.calificacion == 0) {
+            reviewRepository.getReview(movieId, mediaType)
+                .onSuccess { review ->
+                    if (review != null) {
+                        _uiState.update {
+                            it.copy(
+                                calificacion = review.calificacion,
+                                reseña = review.reseña,
+                                etiquetas = review.etiquetas,
+                                hasExistingReview = true,
+                                isLoadingReview = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { it.copy(isLoadingReview = false, hasExistingReview = false) }
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingReview = false,
+                            errorMessage = e.message ?: "No se pudo cargar la reseña"
+                        )
+                    }
+                }
+        }
+    }
+
+    fun saveReview(movieId: Int, mediaType: String, titulo: String, posterPath: String) {
+        val wasEditing = _uiState.value.hasExistingReview
+
+        if (_uiState.value.calificacion == 0) {
             _uiState.update { it.copy(errorMessage = "Selecciona una calificación") }
             return
         }
-
-        if (state.reseña.isBlank()) {
+        if (_uiState.value.reseña.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Escribe una reseña") }
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
+            val state = _uiState.value
             val review = Review(
                 movieId = movieId,
                 titulo = titulo,
@@ -60,29 +102,33 @@ class ReviewViewModel(
                 mediaType = mediaType
             )
 
-            val reviewResult = reviewRepository.saveReview(review)
-            
-            if (reviewResult.isSuccess) {
-                val movieItem = MovieItem(
-                    movieId = movieId,
-                    titulo = titulo,
-                    posterPath = posterPath,
-                    mediaType = mediaType
-                )
-                
-                userListRepository.addMovieToList(movieItem, ListType.YA_VISTO)
-                    .onSuccess {
-                        _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
+            reviewRepository.saveReview(review)
+                .onSuccess {
+                    val movieItem = MovieItem(
+                        movieId = movieId,
+                        titulo = titulo,
+                        posterPath = posterPath,
+                        mediaType = mediaType
+                    )
+                    val toast = if (wasEditing) "Reseña actualizada" else "Reseña guardada con éxito"
+                    userListRepository.addMovieToList(movieItem, ListType.YA_VISTO)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSaveSuccessful = true,
+                            successToastMessage = toast,
+                            hasExistingReview = true
+                        )
                     }
-                    .onFailure {
-                        _uiState.update { it.copy(isLoading = false, isSaveSuccessful = true) }
+                }
+                .onFailure { e ->
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = e.message)
                     }
-            } else {
-                _uiState.update { it.copy(isLoading = false, errorMessage = reviewResult.exceptionOrNull()?.message) }
-            }
+                }
         }
     }
-
+    
     // UserReviewsViewModel
     fun deleteReview(documentId: String) {
         viewModelScope.launch {

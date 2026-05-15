@@ -5,7 +5,10 @@ data class ReviewState(
     val calificacion: Int = 0,
     val reseña: String = "",
     val etiquetas: String = "",
+    val hasExistingReview: Boolean = false,
+    val isLoadingReview: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val isSaveSuccessful: Boolean = false
+    val isSaveSuccessful: Boolean = false,
+    val successToastMessage: String? = null
 )

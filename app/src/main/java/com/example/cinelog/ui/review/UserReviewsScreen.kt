@@ -41,7 +41,8 @@ fun UserReviewsScreen(
     onNavigateToHome: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToLists: () -> Unit,
-    onReviewClick: (Int, String) -> Unit = { _, _ -> }
+    onReviewClick: (Int, String) -> Unit = { _, _ -> },
+    onEditReview: (Review) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -104,6 +105,8 @@ fun UserReviewsScreen(
                 items(uiState.reviews) { review ->
                     ReviewItemCard(
                         review = review,
+                        onViewClick = { onReviewClick(review.movieId, review.mediaType) },
+                        onEditClick = { onEditReview(review) },
                         onDeleteClick = { viewModel.deleteReview(review.documentId) }
                     )
                 }
@@ -115,6 +118,8 @@ fun UserReviewsScreen(
 @Composable
 fun ReviewItemCard(
     review: Review,
+    onViewClick: () -> Unit,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -181,13 +186,13 @@ fun ReviewItemCard(
                         icon = Icons.Default.Visibility,
                         text = "Ver",
                         color = CineLogColors.NavIconActive,
-                        onClick = {}
+                        onClick = onViewClick
                     )
                     ReviewActionButton(
                         icon = Icons.Default.Edit,
                         text = "Editar",
                         color = CineLogColors.Success,
-                        onClick = {}
+                        onClick = onEditClick
                     )
                     ReviewActionButton(
                         icon = Icons.Default.Delete,
