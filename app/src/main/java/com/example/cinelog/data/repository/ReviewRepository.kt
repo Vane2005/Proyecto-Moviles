@@ -56,13 +56,13 @@ class ReviewRepository {
         }
     }
 
-    suspend fun deleteReview(movieId: Int, mediaType: String): Result<Boolean> {
+    suspend fun deleteReview(documentId: String): Result<Boolean> {
         return try {
             val doc = getUserDocument()
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
             doc.collection("reviews")
-                .document(getDocId(movieId, mediaType))
+                .document(documentId)
                 .delete()
                 .await()
 
@@ -78,7 +78,10 @@ class ReviewRepository {
                 ?: return Result.failure(Exception("Usuario no autenticado"))
 
             val snapshot = doc.collection("reviews").get().await()
-            val reviews = snapshot.toObjects(Review::class.java)
+            val reviews = snapshot.documents.map { document ->
+                val review = document.toObject(Review::class.java) ?: Review()
+                review.copy(documentId = document.id)
+            }
             Result.success(reviews)
         } catch (e: Exception) {
             Result.failure(e)

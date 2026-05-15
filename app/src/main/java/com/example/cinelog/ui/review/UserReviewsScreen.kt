@@ -33,6 +33,7 @@ import com.example.cinelog.ui.components.CinelogBottomBar
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 
+
 @Composable
 fun UserReviewsScreen(
     viewModel: UserReviewsViewModel = viewModel(),
@@ -102,7 +103,8 @@ fun UserReviewsScreen(
             ) {
                 items(uiState.reviews) { review ->
                     ReviewItemCard(
-                        review = review
+                        review = review,
+                        onDeleteClick = { viewModel.deleteReview(review.documentId) }
                     )
                 }
             }
@@ -112,7 +114,8 @@ fun UserReviewsScreen(
 
 @Composable
 fun ReviewItemCard(
-    review: Review
+    review: Review,
+    onDeleteClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -190,7 +193,7 @@ fun ReviewItemCard(
                         icon = Icons.Default.Delete,
                         text = "Eliminar",
                         color = CineLogColors.Error,
-                        onClick = {}
+                        onClick = onDeleteClick
                     )
                 }
             }

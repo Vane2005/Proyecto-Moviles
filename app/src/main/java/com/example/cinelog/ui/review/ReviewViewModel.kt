@@ -83,9 +83,10 @@ class ReviewViewModel(
         }
     }
 
-    fun deleteReview(movieId: Int, mediaType: String) {
+    // UserReviewsViewModel
+    fun deleteReview(documentId: String) {
         viewModelScope.launch {
-            reviewRepository.deleteReview(movieId, mediaType)
+            reviewRepository.deleteReview(documentId)
                 .onSuccess { loadReviews() }
                 .onFailure { e ->
                     _uiState.update { it.copy(errorMessage = e.message) }
