@@ -230,6 +230,13 @@ fun CinelogApp() {
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onReviewClick = { movieId, mediaType ->
                         navController.navigate("detail/$movieId/$mediaType")
+                    },
+                    onEditReview = { review ->
+                        val encodedTitle = URLEncoder.encode(review.titulo, "UTF-8")
+                        val encodedPoster = URLEncoder.encode(review.posterPath, "UTF-8")
+                        navController.navigate(
+                            "review/${review.movieId}/${review.mediaType}/$encodedTitle/$encodedPoster"
+                        )
                     }
                 )
             }

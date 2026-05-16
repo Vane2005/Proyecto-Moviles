@@ -47,12 +47,18 @@ fun ReviewScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LaunchedEffect(movieId, mediaType) {
+        viewModel.loadReviewForMovie(movieId, mediaType)
+    }
+    
     LaunchedEffect(uiState.isSaveSuccessful) {
         if (uiState.isSaveSuccessful) {
-            Toast.makeText(context, "Reseña guardada con éxito", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, uiState.successToastMessage ?: "Reseña guardada con éxito", Toast.LENGTH_SHORT).show()
             onNavigateBack()
         }
     }
+
+    val saveButtonText = if (uiState.hasExistingReview) "Actualizar" else "Guardar"
 
     Scaffold(
         containerColor = CineLogColors.Background,
@@ -65,172 +71,184 @@ fun ReviewScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            // Header: Botón Atrás
-            Row(
+        if (uiState.isLoadingReview) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onNavigateBack() }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Atrás",
-                    tint = CineLogColors.SectionTitle
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Atras",
-                    color = CineLogColors.SectionTitle,
-                    fontSize = 18.sp
-                )
+                CircularProgressIndicator(color = CineLogColors.NavIconActive)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Info de la película y Calificación
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             ) {
-                AsyncImage(
-                    model = IMAGE_BASE + posterPath,
-                    contentDescription = titulo,
-                    contentScale = ContentScale.Crop,
+                // Header: Botón Atrás
+                Row(
                     modifier = Modifier
-                        .size(width = 100.dp, height = 150.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
+                        .fillMaxWidth()
+                        .clickable { onNavigateBack() }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Atrás",
+                        tint = CineLogColors.SectionTitle
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = titulo,
+                        text = "Atras",
                         color = CineLogColors.SectionTitle,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    RatingBar(
-                        rating = uiState.calificacion,
-                        onRatingChanged = { viewModel.onCalificacionChange(it) }
+                        fontSize = 18.sp
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Sección Descripción
-            Text(
-                text = "Descripción",
-                color = CineLogColors.SectionTitle,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Caja de texto con efecto de sombra
-            OutlinedTextField(
-                value = uiState.reseña,
-                onValueChange = { viewModel.onReseñaChange(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFF1E293B),
-                    focusedContainerColor = Color(0xFF1E293B),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                    focusedBorderColor = CineLogColors.NavIconActive,
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White
-                )
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Sección Etiquetas
-            Text(
-                text = "Etiquetas",
-                color = CineLogColors.SectionTitle,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Caja de etiquetas con efecto de sombra
-            OutlinedTextField(
-                value = uiState.etiquetas,
-                onValueChange = { viewModel.onEtiquetasChange(it) },
-                placeholder = { Text("Drama, Thriller...", color = CineLogColors.SearchText) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFF1E293B),
-                    focusedContainerColor = Color(0xFF1E293B),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                    focusedBorderColor = CineLogColors.NavIconActive,
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White
-                )
-            )
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // Botones Cancelar y Guardar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = { onNavigateBack() },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Error),
-                    shape = RoundedCornerShape(16.dp)
+                // Info de la película y Calificación
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Cancelar", fontSize = 18.sp, color = Color.White)
-                }
+                    AsyncImage(
+                        model = IMAGE_BASE + posterPath,
+                        contentDescription = titulo,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(width = 100.dp, height = 150.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
 
-                Button(
-                    onClick = { viewModel.saveReview(movieId, mediaType, titulo, posterPath) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Success),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = !uiState.isLoading
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Guardar", fontSize = 18.sp, color = Color.White)
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            text = titulo,
+                            color = CineLogColors.SectionTitle,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        RatingBar(
+                            rating = uiState.calificacion,
+                            onRatingChanged = { viewModel.onCalificacionChange(it) }
+                        )
                     }
                 }
-            }
-            
-            uiState.errorMessage?.let { error ->
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Sección Descripción
                 Text(
-                    text = error,
-                    color = CineLogColors.Error,
-                    modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
+                    text = "Descripción",
+                    color = CineLogColors.SectionTitle,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
                 )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Caja de texto con efecto de sombra
+                OutlinedTextField(
+                    value = uiState.reseña,
+                    onValueChange = { viewModel.onReseñaChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFF1E293B),
+                        focusedContainerColor = Color(0xFF1E293B),
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        focusedBorderColor = CineLogColors.NavIconActive,
+                        unfocusedTextColor = Color.White,
+                        focusedTextColor = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Sección Etiquetas
+                Text(
+                    text = "Etiquetas",
+                    color = CineLogColors.SectionTitle,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Caja de etiquetas con efecto de sombra
+                OutlinedTextField(
+                    value = uiState.etiquetas,
+                    onValueChange = { viewModel.onEtiquetasChange(it) },
+                    placeholder = { Text("Drama, Thriller...", color = CineLogColors.SearchText) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFF1E293B),
+                        focusedContainerColor = Color(0xFF1E293B),
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        focusedBorderColor = CineLogColors.NavIconActive,
+                        unfocusedTextColor = Color.White,
+                        focusedTextColor = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                // Botones Cancelar y Guardar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { onNavigateBack() },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Error),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Text("Cancelar", fontSize = 18.sp, color = Color.White)
+                    }
+
+                    Button(
+                        onClick = { viewModel.saveReview(movieId, mediaType, titulo, posterPath) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = CineLogColors.Success),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = !uiState.isLoading
+                    ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        } else {
+                            //Guardar o actualizar reseña
+                            Text(saveButtonText, fontSize = 18.sp, color = Color.White)
+                        }
+                    }
+                }
+                
+                uiState.errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = CineLogColors.Error,
+                        modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
+                    )
+                }
             }
         }
     }
