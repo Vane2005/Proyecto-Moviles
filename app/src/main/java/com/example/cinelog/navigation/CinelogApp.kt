@@ -24,6 +24,7 @@ import com.example.cinelog.ui.detail.MovieDetailScreen
 import com.example.cinelog.ui.editProfile.EditProfileScreen
 import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
+import com.example.cinelog.ui.forgotPassword.ForgotPasswordScreen
 import com.example.cinelog.ui.review.ReviewScreen
 import com.example.cinelog.ui.review.UserReviewsScreen
 import com.example.cinelog.ui.search.SearchScreen
@@ -40,6 +41,7 @@ private const val ROUTE_PROFILE = "profile"
 private const val ROUTE_DETAIL = "detail/{movieId}/{mediaType}"
 private const val ROUTE_EDIT_PROFILE = "edit_profile/{nombre}/{edad}/{email}"
 private const val ROUTE_CHANGE_PASSWORD = "change_password"
+private const val ROUTE_FORGOT_PASSWORD = "forgot_password"
 private const val ROUTE_USER_LISTS = "user_lists"
 private const val ROUTE_REVIEW = "review/{movieId}/{mediaType}/{titulo}/{posterPath}"
 private const val ROUTE_USER_REVIEWS = "user_reviews"
@@ -107,6 +109,7 @@ fun CinelogApp() {
                 val successMessage = encodedMessage?.let { URLDecoder.decode(it, "UTF-8") }
                 LoginScreen(
                     onNavigateToRegister = { navController.navigate(ROUTE_REGISTER) },
+                    onNavigateToForgotPassword = { navController.navigate(ROUTE_FORGOT_PASSWORD) },
                     onNavigateToHome = { 
                         navController.navigate(ROUTE_HOME) { 
                             popUpTo(0) { inclusive = true } 
@@ -124,6 +127,18 @@ fun CinelogApp() {
                             navController.navigate("login?successMessage=$encoded") { popUpTo(0) { inclusive = true } }
                         } else {
                             navController.popBackStack()
+                        }
+                    }
+                )
+            }
+
+            composable(route = ROUTE_FORGOT_PASSWORD) {
+                ForgotPasswordScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToLoginWithSuccess = { message ->
+                        val encoded = URLEncoder.encode(message, "UTF-8")
+                        navController.navigate("login?successMessage=$encoded") {
+                            popUpTo(ROUTE_LOGIN_BASE) { inclusive = true }
                         }
                     }
                 )
