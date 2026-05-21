@@ -26,6 +26,7 @@ import com.example.cinelog.ui.components.CineLogColors
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onNavigateToRegister: () -> Unit = {},
+    onNavigateToForgotPassword: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     registrationSuccessMessage: String? = null
 ) {
@@ -85,12 +86,12 @@ fun LoginScreen(
                         text = "Iniciar sesión",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = CineLogColors.SearchBar // Reutilizando color oscuro para texto sobre superficie clara
+                        color = CineLogColors.SearchBar
                     )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // Mensaje de éxito tras registro (Viene por navegación)
+                    // Mensaje de éxito tras registro o recuperación
                     if (registrationSuccessMessage != null) {
                         Surface(
                             color = CineLogColors.Success.copy(alpha = 0.1f),
@@ -130,7 +131,7 @@ fun LoginScreen(
                     // Opción: Olvidé mi contraseña
                     Box(modifier = Modifier.fillMaxWidth()) {
                         TextButton(
-                            onClick = { /* Implementación futura */ },
+                            onClick = onNavigateToForgotPassword,
                             modifier = Modifier.align(Alignment.CenterEnd),
                             contentPadding = PaddingValues(0.dp)
                         ) {

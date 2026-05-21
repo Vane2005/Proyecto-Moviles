@@ -16,6 +16,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +31,7 @@ import coil.compose.AsyncImage
 import com.example.cinelog.data.model.Movie
 import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.components.CinelogBottomBar
+import kotlinx.coroutines.delay
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w200"
 
@@ -215,6 +218,14 @@ fun SearchHeader(
     query: String,
     onQueryChange: (String) -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    // Al entrar a la pantalla, pedimos el foco automáticamente para que el teclado salga de una
+    LaunchedEffect(Unit) {
+        delay(300)
+        focusRequester.requestFocus()
+    }
+
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
@@ -232,7 +243,8 @@ fun SearchHeader(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .focusRequester(focusRequester),
         shape = RoundedCornerShape(12.dp),
         singleLine = true
     )
