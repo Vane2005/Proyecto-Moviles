@@ -11,6 +11,24 @@ class MovieRepository {
 
     private val api = RetrofitClient.tmdbApiService
 
+    suspend fun getTrendingTv(): Result<List<Movie>> {
+        return try {
+            val response = api.getTrendingTv()
+            Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getTvByGenre(genreId: Int): Result<List<Movie>> {
+        return try {
+            val response = api.getTvByGenre(genreId)
+            Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     suspend fun getTrendingMovies(): Result<List<Movie>> {
         return try {
             val response = api.getTrendingMovies()

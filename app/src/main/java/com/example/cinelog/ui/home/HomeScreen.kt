@@ -34,6 +34,7 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
     onNavigateToMovieDetail: (Int) -> Unit = {},
+    onNavigateToSeriesDetail: (Int) -> Unit = {},
     onNavigateToSearch: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -63,6 +64,21 @@ fun HomeScreen(
                     FeaturedBanner(movie = it, onClick = { onNavigateToMovieDetail(it.id) })
                 }
 
+                uiState.featuredSeries?.let {
+                    FeaturedBanner(movie = it, onClick = { onNavigateToSeriesDetail(it.id) })
+                }
+
+                // Series
+                SectionTitle("Terror Series")
+                MovieCarousel(uiState.horrorSeries, onMovieClick = onNavigateToSeriesDetail)
+
+                SectionTitle("Romance Series")
+                MovieCarousel(uiState.romanceSeries, onMovieClick = onNavigateToSeriesDetail)
+
+                SectionTitle("Animación Series")
+                MovieCarousel(uiState.animationSeries, onMovieClick = onNavigateToSeriesDetail)
+
+                // Movies
                 SectionTitle("Terror")
                 MovieCarousel(uiState.horrorMovies, onMovieClick = onNavigateToMovieDetail)
 

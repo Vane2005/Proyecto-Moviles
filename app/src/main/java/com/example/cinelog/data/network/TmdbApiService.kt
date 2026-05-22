@@ -9,6 +9,14 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface TmdbApiService {
+    @GET("trending/tv/week")
+    suspend fun getTrendingTv(): MovieResponse
+
+    @GET("discover/tv")
+    suspend fun getTvByGenre(
+        @Query("with_genres") genreID: Int,
+        @Query("sort_by") sortBy: String = "popularity.desc"
+    ): MovieResponse
 
     @GET("trending/movie/week")
     suspend fun getTrendingMovies(): MovieResponse

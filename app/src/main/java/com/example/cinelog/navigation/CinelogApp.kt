@@ -149,6 +149,7 @@ fun CinelogApp() {
                     onNavigateToHome = { },
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToMovieDetail = { movieId -> navController.navigate("detail/$movieId/movie") },
+                    onNavigateToSeriesDetail = { seriesId -> navController.navigate("detail/$seriesId/series") },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onNavigateToSearch = { navController.navigate(ROUTE_SEARCH) }
                 )
