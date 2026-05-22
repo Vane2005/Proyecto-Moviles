@@ -23,6 +23,7 @@ import coil.compose.AsyncImage
 import com.example.cinelog.data.model.Movie
 import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.components.CinelogBottomBar
+import com.example.cinelog.domain.model.HomeContentTab
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
@@ -33,8 +34,7 @@ fun HomeScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
-    onNavigateToMovieDetail: (Int) -> Unit = {},
-    onNavigateToSeriesDetail: (Int) -> Unit = {},
+    onNavigateToDetail: (Int, String) -> Unit = { _, _ -> },
     onNavigateToSearch: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,35 +60,40 @@ fun HomeScreen(
             item {
                 SearchBar(onClick = onNavigateToSearch)
 
-                uiState.featuredMovie?.let {
-                    FeaturedBanner(movie = it, onClick = { onNavigateToMovieDetail(it.id) })
+                HomeTabSelector(
+                    selectedTab = uiState.selectedTab,
+                    onTabSelected = viewModel::selectTab
+                )
+
+                when (uiState.selectedTab) {
+
+                    HomeContentTab.MOVIES -> {
+                        uiState.featuredMovie?.let {
+                            FeaturedBanner(it) { onNavigateToDetail(it.id, "movie") }
+                        }
+                        SectionTitle("Terror")
+                        MovieCarousel(uiState.horrorMovies) { id -> onNavigateToDetail(id, "movie") }
+                        SectionTitle("Romance")
+                        MovieCarousel(uiState.romanceMovies) { id -> onNavigateToDetail(id, "movie") }
+                        SectionTitle("Animación")
+                        MovieCarousel(uiState.animationMovies) { id -> onNavigateToDetail(id, "movie") }
+                    }
+                    
+                    HomeContentTab.SERIES -> {
+                        uiState.featuredSeries?.let {
+                            FeaturedBanner(it) { onNavigateToDetail(it.id, "tv") }
+                        }
+                        SectionTitle("Drama")
+                        MovieCarousel(uiState.dramaSeries) { id -> onNavigateToDetail(id, "tv") }
+                        SectionTitle("Romance")
+                        MovieCarousel(uiState.romanceSeries) { id -> onNavigateToDetail(id, "tv") }
+                        SectionTitle("Animación")
+                        MovieCarousel(uiState.animationSeries) { id -> onNavigateToDetail(id, "tv") }
+                    }
                 }
-
-                uiState.featuredSeries?.let {
-                    FeaturedBanner(movie = it, onClick = { onNavigateToSeriesDetail(it.id) })
-                }
-
-                // Series
-                SectionTitle("Terror Series")
-                MovieCarousel(uiState.horrorSeries, onMovieClick = onNavigateToSeriesDetail)
-
-                SectionTitle("Romance Series")
-                MovieCarousel(uiState.romanceSeries, onMovieClick = onNavigateToSeriesDetail)
-
-                SectionTitle("Animación Series")
-                MovieCarousel(uiState.animationSeries, onMovieClick = onNavigateToSeriesDetail)
-
-                // Movies
-                SectionTitle("Terror")
-                MovieCarousel(uiState.horrorMovies, onMovieClick = onNavigateToMovieDetail)
-
-                SectionTitle("Romance")
-                MovieCarousel(uiState.romanceMovies, onMovieClick = onNavigateToMovieDetail)
-
-                SectionTitle("Animación")
-                MovieCarousel(uiState.animationMovies, onMovieClick = onNavigateToMovieDetail)
 
                 Spacer(modifier = Modifier.height(16.dp))
+
             }
         }
     }
@@ -160,7 +165,7 @@ fun SectionTitle(title: String) {
 }
 
 @Composable
-fun MovieCarousel(movies: List<Movie>, onMovieClick: (Int) -> Unit) {
+fun MovieCarousel(movies: List<Movie>, onItemClick: (Int) -> Unit) {
     if (movies.isEmpty()) {
         Text(
             text = "No hay películas",
@@ -178,7 +183,7 @@ fun MovieCarousel(movies: List<Movie>, onMovieClick: (Int) -> Unit) {
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
         items(movies) { movie ->
-            MovieCard(movie, cardWidth, onClick = { onMovieClick(movie.id) })
+            MovieCard(movie, cardWidth, onClick = { onItemClick(movie.id) })
         }
     }
 }
@@ -197,6 +202,32 @@ fun MovieCard(movie: Movie, width: Dp, onClick: () -> Unit) {
             contentDescription = movie.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+@Composable
+fun HomeTabSelector(
+    selectedTab: HomeContentTab,
+    onTabSelected: (HomeContentTab) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        FilterChip(
+            selected = selectedTab == HomeContentTab.MOVIES,
+            onClick = { onTabSelected(HomeContentTab.MOVIES) },
+            label = { Text("Películas") },
+            modifier = Modifier.weight(1f)
+        )
+        FilterChip(
+            selected = selectedTab == HomeContentTab.SERIES,
+            onClick = { onTabSelected(HomeContentTab.SERIES) },
+            label = { Text("Series") },
+            modifier = Modifier.weight(1f)
         )
     }
 }
