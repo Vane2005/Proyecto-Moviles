@@ -8,5 +8,10 @@ data class HomeState(
     val romanceMovies: List<Movie> = emptyList(),
     val animationMovies: List<Movie> = emptyList(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+
+    val featuredSeries: Movie? = null,
+    val horrorSeries: List<Movie> = emptyList(),
+    val romanceSeries: List<Movie> = emptyList(),
+    val animationSeries: List<Movie> = emptyList()
 )

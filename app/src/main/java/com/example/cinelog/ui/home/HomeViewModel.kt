@@ -31,11 +31,22 @@ class HomeViewModel(
             val horrorDeferred = async { movieRepository.getMoviesByGenre(27) }
             val romanceDeferred = async { movieRepository.getMoviesByGenre(10749) }
             val animationDeferred = async { movieRepository.getMoviesByGenre(16) }
+            // Series
+            val trendingTvDeferred = async { movieRepository.getTrendingTv() }
+            val horrorTvDeferred = async { movieRepository.getTvByGenre(27) }
+            val romanceTvDeferred = async { movieRepository.getTvByGenre(10749) }
+            val animationTvDeferred = async { movieRepository.getTvByGenre(16) }
 
+            // Movies
             val trending = trendingDeferred.await()
             val horror = horrorDeferred.await()
             val romance = romanceDeferred.await()
             val animation = animationDeferred.await()
+            // Series
+            val trendingTv = trendingTvDeferred.await()
+            val horrorTv = horrorTvDeferred.await()
+            val romanceTv = romanceTvDeferred.await()
+            val animationTv = animationTvDeferred.await()
 
             _uiState.update {
                 it.copy(
@@ -43,7 +54,12 @@ class HomeViewModel(
                     featuredMovie = trending.getOrNull()?.firstOrNull(),
                     horrorMovies = horror.getOrDefault(emptyList()),
                     romanceMovies = romance.getOrDefault(emptyList()),
-                    animationMovies = animation.getOrDefault(emptyList())
+                    animationMovies = animation.getOrDefault(emptyList()),
+
+                    featuredSeries = trendingTv.getOrNull()?.firstOrNull(),
+                    horrorSeries = horrorTv.getOrDefault(emptyList()),
+                    romanceSeries = romanceTv.getOrDefault(emptyList()),
+                    animationSeries = animationTv.getOrDefault(emptyList())
                 )
             }
         }
