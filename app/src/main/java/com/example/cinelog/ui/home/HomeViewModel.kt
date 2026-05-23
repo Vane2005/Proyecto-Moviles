@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinelog.data.repository.MovieRepository
 import com.example.cinelog.domain.model.HomeState
+import com.example.cinelog.domain.model.HomeContentTab
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,10 @@ class HomeViewModel(
         loadHomeContent()
     }
 
+    fun selectTab(tab: HomeContentTab) {
+        _uiState.update { it.copy(selectedTab = tab) }
+    }
+
     private fun loadHomeContent() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -33,7 +38,7 @@ class HomeViewModel(
             val animationDeferred = async { movieRepository.getMoviesByGenre(16) }
             // Series
             val trendingTvDeferred = async { movieRepository.getTrendingTv() }
-            val horrorTvDeferred = async { movieRepository.getTvByGenre(27) }
+            val dramaTvDeferred = async { movieRepository.getTvByGenre(18) }
             val romanceTvDeferred = async { movieRepository.getTvByGenre(10749) }
             val animationTvDeferred = async { movieRepository.getTvByGenre(16) }
 
@@ -44,7 +49,7 @@ class HomeViewModel(
             val animation = animationDeferred.await()
             // Series
             val trendingTv = trendingTvDeferred.await()
-            val horrorTv = horrorTvDeferred.await()
+            val dramaTv = dramaTvDeferred.await()
             val romanceTv = romanceTvDeferred.await()
             val animationTv = animationTvDeferred.await()
 
@@ -57,7 +62,7 @@ class HomeViewModel(
                     animationMovies = animation.getOrDefault(emptyList()),
 
                     featuredSeries = trendingTv.getOrNull()?.firstOrNull(),
-                    horrorSeries = horrorTv.getOrDefault(emptyList()),
+                    dramaSeries = dramaTv.getOrDefault(emptyList()),
                     romanceSeries = romanceTv.getOrDefault(emptyList()),
                     animationSeries = animationTv.getOrDefault(emptyList())
                 )
