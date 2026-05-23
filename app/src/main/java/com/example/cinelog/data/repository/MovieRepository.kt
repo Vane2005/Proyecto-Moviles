@@ -65,7 +65,7 @@ class MovieRepository {
 
     suspend fun getTvDetail(id: Int): Result<TvDetail> {
         return try {
-            Result.success(api.getTvDetail(id, appendToResponse = null))
+            Result.success(api.getTvDetail(id, appendToResponse = "videos"))
         } catch (e: Exception) {
             Result.failure(e)
         }
