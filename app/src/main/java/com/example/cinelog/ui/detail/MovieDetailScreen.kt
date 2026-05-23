@@ -88,7 +88,8 @@ fun MovieDetailScreen(
             }
         } else if (uiState.movie != null || uiState.tvShow != null) {
             
-            val trailerKey = uiState.movie?.videos?.results?.find {
+            val videos = uiState.movie?.videos ?: uiState.tvShow?.videos
+            val trailerKey = videos?.results?.find {
                 it.site == "YouTube" && (it.type == "Trailer" || it.type == "Teaser")
             }?.key
 
@@ -216,21 +217,29 @@ fun MovieDetailScreen(
                                             fontSize = 13.sp
                                         )
                                     } else {
-                                        Surface(
-                                            color = CineLogColors.NavIconActive.copy(alpha = 0.2f),
-                                            shape = RoundedCornerShape(8.dp)
+                                        Button(
+                                            onClick = {
+                                                trailerKey?.let {
+                                                    uriHandler.openUri("https://www.youtube.com/watch?v=$it")
+                                                }
+                                            },
+                                            enabled = trailerKey != null,
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)),
+                                            shape = RoundedCornerShape(12.dp),
+                                            contentPadding = PaddingValues(horizontal = 16.dp),
+                                            modifier = Modifier.height(36.dp)
                                         ) {
+                                            Icon(Icons.Default.PlayArrow, null, modifier = Modifier.size(20.dp))
+                                            Spacer(modifier = Modifier.width(4.dp))
                                             Text(
-                                                text = "Serie de TV",
-                                                color = CineLogColors.NavIconActive,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold
+                                                text = if (trailerKey != null) "Trailer" else "Sin trailer",
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 13.sp
                                             )
                                         }
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Text(
-                                            text = "Rating: ${String.format("%.1f", uiState.displayVoteAverage)}",
+                                            text = "${uiState.tvShow?.numberOfSeasons ?: 0} temps",
                                             color = Color.White.copy(alpha = 0.6f),
                                             fontSize = 13.sp
                                         )

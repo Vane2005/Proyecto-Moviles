@@ -10,5 +10,7 @@ data class TvDetail(
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("first_air_date") val firstAirDate: String?,
     @SerializedName("vote_average") val voteAverage: Double,
-    @SerializedName("genres") val genres: List<Genre>
+    @SerializedName("genres") val genres: List<Genre>,
+    @SerializedName("videos") val videos: VideoResponse?,
+    @SerializedName("number_of_seasons") val numberOfSeasons: Int
 )
