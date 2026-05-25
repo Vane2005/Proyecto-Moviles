@@ -1,6 +1,7 @@
 package com.example.cinelog.domain.model
 
 import com.example.cinelog.data.model.Movie
+import com.example.cinelog.data.network.NetworkError
 
 data class HomeState(
     val selectedTab: HomeContentTab = HomeContentTab.MOVIES,
@@ -12,6 +13,8 @@ data class HomeState(
 
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val errorType: NetworkError? = null,
+    val isOffline: Boolean = false,
 
     val featuredSeries: Movie? = null,
     val dramaSeries: List<Movie> = emptyList(),
