@@ -7,9 +7,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,12 +33,19 @@ fun ForgotPasswordScreen(
     onNavigateToLoginWithSuccess: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) {
             onNavigateToLoginWithSuccess("Se ha enviado un correo para restablecer tu contraseña.")
         }
     }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }    
 
     Box(
         modifier = Modifier
@@ -109,16 +120,6 @@ fun ForgotPasswordScreen(
                         leadingIcon = Icons.Default.Email
                     )
 
-                    if (uiState.errorMessage != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = uiState.errorMessage!!,
-                            color = CineLogColors.Error,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Button(
@@ -149,6 +150,22 @@ fun ForgotPasswordScreen(
                     }
                 }
             }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .align(alignment = Alignment.BottomCenter)
+        ) { snackbarData ->
+            Snackbar(
+                snackbarData = snackbarData,
+                containerColor = Color(0xFFD32F2F),
+                contentColor = Color.White,
+                actionColor = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }
