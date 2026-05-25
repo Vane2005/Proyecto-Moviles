@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,12 +36,19 @@ fun RegisterScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.isRegisterSuccessful) {
         if (uiState.isRegisterSuccessful) {
             onNavigateToLogin("¡Cuenta creada con éxito! Ya puedes iniciar sesión.")
         }
     }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
+        }
+    }    
 
     Box(
         modifier = Modifier
@@ -141,16 +151,6 @@ fun RegisterScreen(
                         isPassword = true
                     )
 
-                    if (uiState.errorMessage != null) {
-                        Text(
-                            text = uiState.errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
@@ -190,6 +190,22 @@ fun RegisterScreen(
                     }
                 }
             }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .align(alignment = Alignment.BottomCenter)
+        ) { snackbarData ->
+            Snackbar(
+                snackbarData = snackbarData,
+                containerColor = Color(0xFFD32F2F),
+                contentColor = Color.White,
+                actionColor = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }

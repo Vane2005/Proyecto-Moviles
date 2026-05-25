@@ -24,76 +24,124 @@ import com.example.cinelog.data.model.Movie
 import com.example.cinelog.ui.components.CineLogColors
 import com.example.cinelog.ui.components.CinelogBottomBar
 import com.example.cinelog.domain.model.HomeContentTab
+import com.example.cinelog.ui.components.OfflineScreen
+import com.example.cinelog.ui.components.ErrorScreen
+import com.example.cinelog.ui.components.LoadingScreen
+import androidx.compose.ui.platform.LocalContext
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 private const val BACKDROP_BASE = "https://image.tmdb.org/t/p/w780"
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
     onNavigateToHome: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit = {},
     onNavigateToDetail: (Int, String) -> Unit = { _, _ -> },
     onNavigateToSearch: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val viewModel: HomeViewModel = viewModel { HomeViewModel(context = context.applicationContext) }
+
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = CineLogColors.Background,
         contentWindowInsets = WindowInsets.safeDrawing,
-        bottomBar = { 
+        bottomBar = {
             CinelogBottomBar(
                 currentRoute = "home",
                 onNavigateToHome = onNavigateToHome,
                 onNavigateToProfile = onNavigateToProfile,
                 onNavigateToLists = onNavigateToLists
-            ) 
+            )
         }
     ) { padding ->
+        val errorMessage = uiState.errorMessage
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            item {
-                SearchBar(onClick = onNavigateToSearch)
+        if (uiState.isLoading) {
+            LoadingScreen()
+        } else if (uiState.isOffline) {
+            OfflineScreen(onRetry = viewModel::retryLoad)
+        } else if (errorMessage != null) {
+            ErrorScreen(
+                message = errorMessage,
+                onRetry = viewModel::retryLoad
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                item {
+                    SearchBar(onClick = onNavigateToSearch)
 
-                HomeTabSelector(
-                    selectedTab = uiState.selectedTab,
-                    onTabSelected = viewModel::selectTab
-                )
+                    HomeTabSelector(
+                        selectedTab = uiState.selectedTab,
+                        onTabSelected = viewModel::selectTab
+                    )
 
-                when (uiState.selectedTab) {
+                    when (uiState.selectedTab) {
 
-                    HomeContentTab.MOVIES -> {
-                        uiState.featuredMovie?.let {
-                            FeaturedBanner(it) { onNavigateToDetail(it.id, "movie") }
+                        HomeContentTab.MOVIES -> {
+                            uiState.featuredMovie?.let {
+                                FeaturedBanner(it) { onNavigateToDetail(it.id, "movie") }
+                            }
+                            SectionTitle("Terror")
+                            MovieCarousel(uiState.horrorMovies) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "movie"
+                                )
+                            }
+                            SectionTitle("Romance")
+                            MovieCarousel(uiState.romanceMovies) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "movie"
+                                )
+                            }
+                            SectionTitle("Animación")
+                            MovieCarousel(uiState.animationMovies) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "movie"
+                                )
+                            }
                         }
-                        SectionTitle("Terror")
-                        MovieCarousel(uiState.horrorMovies) { id -> onNavigateToDetail(id, "movie") }
-                        SectionTitle("Romance")
-                        MovieCarousel(uiState.romanceMovies) { id -> onNavigateToDetail(id, "movie") }
-                        SectionTitle("Animación")
-                        MovieCarousel(uiState.animationMovies) { id -> onNavigateToDetail(id, "movie") }
-                    }
-                    
-                    HomeContentTab.SERIES -> {
-                        uiState.featuredSeries?.let {
-                            FeaturedBanner(it) { onNavigateToDetail(it.id, "tv") }
+
+                        HomeContentTab.SERIES -> {
+                            uiState.featuredSeries?.let {
+                                FeaturedBanner(it) { onNavigateToDetail(it.id, "tv") }
+                            }
+                            SectionTitle("Drama")
+                            MovieCarousel(uiState.dramaSeries) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "tv"
+                                )
+                            }
+                            SectionTitle("Romance")
+                            MovieCarousel(uiState.romanceSeries) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "tv"
+                                )
+                            }
+                            SectionTitle("Animación")
+                            MovieCarousel(uiState.animationSeries) { id ->
+                                onNavigateToDetail(
+                                    id,
+                                    "tv"
+                                )
+                            }
                         }
-                        SectionTitle("Drama")
-                        MovieCarousel(uiState.dramaSeries) { id -> onNavigateToDetail(id, "tv") }
-                        SectionTitle("Romance")
-                        MovieCarousel(uiState.romanceSeries) { id -> onNavigateToDetail(id, "tv") }
-                        SectionTitle("Animación")
-                        MovieCarousel(uiState.animationSeries) { id -> onNavigateToDetail(id, "tv") }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
             }
         }
     }

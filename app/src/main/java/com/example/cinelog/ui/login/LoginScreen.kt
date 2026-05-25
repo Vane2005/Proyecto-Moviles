@@ -8,6 +8,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,24 +21,33 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cinelog.ui.components.CineLogColors
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
     onNavigateToRegister: () -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     registrationSuccessMessage: String? = null
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
+        val context = LocalContext.current
+        val viewModel: LoginViewModel = viewModel { LoginViewModel(context = context.applicationContext) }
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val snackbarHostState = remember { SnackbarHostState() }
+        
     // Navegar al Home solo cuando el login es exitoso explícitamente
     LaunchedEffect(uiState.isLoginSuccessful) {
         if (uiState.isLoginSuccessful) {
             onNavigateToHome()
+        }
+    }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(message)
         }
     }
 
@@ -144,16 +156,6 @@ fun LoginScreen(
                         }
                     }
 
-                    if (uiState.errorMessage != null) {
-                        Text(
-                            text = uiState.errorMessage!!,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
@@ -184,6 +186,22 @@ fun LoginScreen(
                     }
                 }
             }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .align(alignment = Alignment.BottomCenter)
+        ) { snackbarData ->
+            Snackbar(
+                snackbarData = snackbarData,
+                containerColor = Color(0xFFD32F2F),
+                contentColor = Color.White,
+                actionColor = Color.White,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }

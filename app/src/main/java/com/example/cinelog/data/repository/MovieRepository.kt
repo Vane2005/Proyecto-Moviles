@@ -76,9 +76,6 @@ class MovieRepository {
             if (query.isBlank()) return Result.success(MovieResponse(1, emptyList(), 0, 0))
             val response = api.searchMulti(query, page)
             
-            // Filtramos para mostrar solo películas y series (media_type "movie" o "tv")
-            // También incluimos aquellos que no tengan media_type por si la API no lo envía en algún caso,
-            // pero que tengan título o nombre.
             val filteredResults = response.results.filter { 
                 it.mediaType == "movie" || it.mediaType == "tv" || it.mediaType == null
             }
