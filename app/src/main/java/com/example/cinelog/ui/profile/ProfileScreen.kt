@@ -32,7 +32,8 @@ fun ProfileScreen(
     onNavigateToProfile: () -> Unit = {},
     onNavigateToLists: () -> Unit,
     onNavigateToEditProfile: (String, String, String) -> Unit = { _, _, _ -> },
-    onNavigateToMyReviews: () -> Unit = {}
+    onNavigateToMyReviews: () -> Unit = {},
+    onNavigateToStats: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -126,7 +127,8 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
             ProfileMenuItem(
                 icon = Icons.Default.Info,
-                title = "Estadisticas"
+                title = "Estadisticas",
+                onClick = onNavigateToStats
             )
 
             Spacer(modifier = Modifier.height(16.dp))
