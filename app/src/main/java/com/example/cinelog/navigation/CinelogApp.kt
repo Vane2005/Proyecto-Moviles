@@ -28,6 +28,7 @@ import com.example.cinelog.ui.forgotPassword.ForgotPasswordScreen
 import com.example.cinelog.ui.review.ReviewScreen
 import com.example.cinelog.ui.review.UserReviewsScreen
 import com.example.cinelog.ui.search.SearchScreen
+import com.example.cinelog.ui.stats.StatsScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -45,6 +46,7 @@ private const val ROUTE_FORGOT_PASSWORD = "forgot_password"
 private const val ROUTE_USER_LISTS = "user_lists"
 private const val ROUTE_REVIEW = "review/{movieId}/{mediaType}/{titulo}/{posterPath}"
 private const val ROUTE_USER_REVIEWS = "user_reviews"
+private const val ROUTE_STATS = "stats"
 
 private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_SEARCH, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
 
@@ -233,6 +235,9 @@ fun CinelogApp() {
                     },
                     onNavigateToMyReviews = {
                         navController.navigate(ROUTE_USER_REVIEWS)
+                    },
+                    onNavigateToStats = {
+                        navController.navigate(ROUTE_STATS)
                     }
                 )
             }
@@ -293,6 +298,12 @@ fun CinelogApp() {
                     }
                 )
             }
+
+            composable(route = ROUTE_STATS) {
+                StatsScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }           
         }
     }
 }
