@@ -1,5 +1,6 @@
 package com.example.cinelog.data.repository
 
+import android.app.Application
 import com.example.cinelog.data.model.MovieItem
 import com.example.cinelog.domain.model.ListType
 import com.example.cinelog.domain.model.User
@@ -8,13 +9,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-
 import kotlinx.coroutines.tasks.await
 
-class UserListRepository {
+class UserListRepository() {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
