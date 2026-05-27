@@ -167,7 +167,7 @@ fun ReviewItemCard(
                         )
                     }
                 }
-                
+
                 val typeText = if (review.mediaType == "tv") "Serie" else "Película"
                 Text(
                     text = typeText,
