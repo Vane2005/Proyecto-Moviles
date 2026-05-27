@@ -21,6 +21,12 @@ data class GenreCount(
 
 data class StatsUiState(
     val topGenres: List<GenreCount> = emptyList(),
+    val recentMovies: List<MovieItem> = emptyList(),
+
+    val vistasCount: Int = 0,
+    val watchLaterCount: Int = 0,
+    val favoritesCount: Int = 0,
+
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 )
@@ -34,70 +40,113 @@ class StatsViewModel(
     val uiState: StateFlow<StatsUiState> = _uiState
 
     init {
-        loadTopGenres()
+        loadStats()
     }
 
-    private fun loadTopGenres() {
+    private fun loadStats() {
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            
+
+            _uiState.update {
+                it.copy(isLoading = true)
+            }
+
             try {
-                val yaVistoResult = userListRepository.getMoviesFromList(ListType.YA_VISTO)
-                val yaVisto = yaVistoResult.getOrDefault(emptyList())
-                
-                if (yaVisto.isEmpty()) {
-                    _uiState.update { it.copy(isLoading = false, topGenres = emptyList()) }
-                    return@launch
-                }
-                
+
+                val yaVisto =
+                    userListRepository
+                        .getMoviesFromList(ListType.YA_VISTO)
+                        .getOrDefault(emptyList())
+
+                val favoritas =
+                    userListRepository
+                        .getMoviesFromList(ListType.FAVORITAS)
+                        .getOrDefault(emptyList())
+
+                val verMasTarde =
+                    userListRepository
+                        .getMoviesFromList(ListType.WATCHLIST)
+                        .getOrDefault(emptyList())
+
                 val topGenres = calculateTop3Genres(yaVisto)
-                _uiState.update { it.copy(isLoading = false, topGenres = topGenres) }
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+
+                        topGenres = topGenres,
+
+                        recentMovies = yaVisto.take(3),
+
+                        vistasCount = yaVisto.size,
+                        watchLaterCount = verMasTarde.size,
+                        favoritesCount = favoritas.size
+                    )
+                }
+
             } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(isLoading = false, errorMessage = e.message) 
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message
+                    )
                 }
             }
         }
     }
 
-    private suspend fun calculateTop3Genres(yaVisto: List<MovieItem>): List<GenreCount> {
+    private suspend fun calculateTop3Genres(
+        yaVisto: List<MovieItem>
+    ): List<GenreCount> {
+
         val genreCounts = mutableMapOf<String, Int>()
-        
-        // Crear lista de Deferred para las operaciones asíncronas
+
         val detailJobs: List<Deferred<List<String>>> = yaVisto.map { item ->
+
             viewModelScope.async {
+
                 try {
+
                     if (item.mediaType == "tv") {
+
                         val result = movieRepository.getTvDetail(item.movieId)
-                        result.getOrNull()?.genres?.map { it.name } ?: emptyList()
+
+                        result.getOrNull()
+                            ?.genres
+                            ?.map { it.name }
+                            ?: emptyList()
+
                     } else {
+
                         val result = movieRepository.getMovieDetail(item.movieId)
-                        result.getOrNull()?.genres?.map { it.name } ?: emptyList()
+
+                        result.getOrNull()
+                            ?.genres
+                            ?.map { it.name }
+                            ?: emptyList()
                     }
-                } catch (e: Exception) {
+
+                } catch (_: Exception) {
                     emptyList()
                 }
             }
         }
-        
-        // Esperar todos los resultados
+
         val allGenres = detailJobs.awaitAll()
-        
-        // Contar géneros
+
         allGenres.forEach { genres ->
+
             genres.forEach { genre ->
-                genreCounts[genre] = (genreCounts[genre] ?: 0) + 1
+
+                genreCounts[genre] =
+                    (genreCounts[genre] ?: 0) + 1
             }
         }
-        
-        // Ordenar y tomar top 3
+
         return genreCounts.entries
             .sortedByDescending { it.value }
             .take(3)
-            .map { (name, count) -> GenreCount(name, count) }
-    }
-
-    fun refresh() {
-        loadTopGenres()
+            .map { GenreCount(it.key, it.value) }
     }
 }
