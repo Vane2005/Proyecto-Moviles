@@ -29,6 +29,7 @@ import com.example.cinelog.ui.review.ReviewScreen
 import com.example.cinelog.ui.review.UserReviewsScreen
 import com.example.cinelog.ui.search.SearchScreen
 import com.example.cinelog.ui.stats.StatsScreen
+import com.example.cinelog.ui.review.ViewReviewUserScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.net.URLDecoder
 import java.net.URLEncoder
@@ -47,6 +48,8 @@ private const val ROUTE_USER_LISTS = "user_lists"
 private const val ROUTE_REVIEW = "review/{movieId}/{mediaType}/{titulo}/{posterPath}"
 private const val ROUTE_USER_REVIEWS = "user_reviews"
 private const val ROUTE_STATS = "stats"
+
+private const val ROUTE_VIEW_REVIEW = "view_review/{movieId}/{mediaType}"
 
 private val PROTECTED_ROUTES = setOf(ROUTE_HOME, ROUTE_SEARCH, ROUTE_PROFILE, "detail", "review", ROUTE_USER_REVIEWS)
 
@@ -249,14 +252,54 @@ fun CinelogApp() {
                     onNavigateToProfile = { navigateToSection(ROUTE_PROFILE) },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onReviewClick = { movieId, mediaType ->
-                        navController.navigate("detail/$movieId/$mediaType")
-                    },
+                        navController.navigate("view_review/$movieId/$mediaType") },
                     onEditReview = { review ->
                         val encodedTitle = URLEncoder.encode(review.titulo, "UTF-8")
                         val encodedPoster = URLEncoder.encode(review.posterPath, "UTF-8")
                         navController.navigate(
                             "review/${review.movieId}/${review.mediaType}/$encodedTitle/$encodedPoster"
                         )
+                    }
+                )
+            }
+
+            composable(
+                route = ROUTE_VIEW_REVIEW,
+                arguments = listOf(
+                    navArgument("movieId") {
+                        type = NavType.IntType
+                    },
+                    navArgument("mediaType") {
+                        type = NavType.StringType
+                    }
+                )
+            ) { backStackEntry ->
+
+                val movieId =
+                    backStackEntry.arguments?.getInt("movieId") ?: 0
+
+                val mediaType =
+                    backStackEntry.arguments?.getString("mediaType")
+                        ?: "movie"
+
+                ViewReviewUserScreen(
+                    movieId = movieId,
+                    mediaType = mediaType,
+
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    },
+
+                    onNavigateToHome = {
+                        navigateToSection(ROUTE_HOME)
+                    },
+
+                    onNavigateToProfile = {
+                        navigateToSection(ROUTE_PROFILE)
+                    },
+
+                    onNavigateToLists = {
+                        navigateToSection(ROUTE_USER_LISTS)
                     }
                 )
             }
