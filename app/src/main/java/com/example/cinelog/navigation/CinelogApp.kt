@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,6 +26,7 @@ import com.example.cinelog.ui.editProfile.EditProfileScreen
 import com.example.cinelog.ui.lists.UserListScreen
 import com.example.cinelog.ui.changePassword.ChangePasswordScreen
 import com.example.cinelog.ui.forgotPassword.ForgotPasswordScreen
+import com.example.cinelog.ui.profile.ProfileViewModel
 import com.example.cinelog.ui.review.ReviewScreen
 import com.example.cinelog.ui.review.UserReviewsScreen
 import com.example.cinelog.ui.search.SearchScreen
@@ -228,20 +230,18 @@ fun CinelogApp() {
                 )
             }
 
-            composable(route = ROUTE_PROFILE) {
+            composable(route = ROUTE_PROFILE) { entry ->
+                val profileViewModel: ProfileViewModel = viewModel(entry)
                 ProfileScreen(
+                    viewModel = profileViewModel,
                     onNavigateToHome = { navigateToSection(ROUTE_HOME) },
                     onNavigateToProfile = { },
                     onNavigateToLists = { navigateToSection(ROUTE_USER_LISTS) },
                     onNavigateToEditProfile = { n, ed, em ->
                         navController.navigate("edit_profile/${URLEncoder.encode(n, "UTF-8")}/${URLEncoder.encode(ed, "UTF-8")}/${URLEncoder.encode(em, "UTF-8")}")
                     },
-                    onNavigateToMyReviews = {
-                        navController.navigate(ROUTE_USER_REVIEWS)
-                    },
-                    onNavigateToStats = {
-                        navController.navigate(ROUTE_STATS)
-                    }
+                    onNavigateToMyReviews = { navController.navigate(ROUTE_USER_REVIEWS) },
+                    onNavigateToStats = { navController.navigate(ROUTE_STATS) }
                 )
             }
 
@@ -304,19 +304,44 @@ fun CinelogApp() {
                 )
             }
 
-            composable(
-                route = ROUTE_EDIT_PROFILE,
-                arguments = listOf(navArgument("nombre") { type = NavType.StringType }, navArgument("edad") { type = NavType.StringType }, navArgument("email") { type = NavType.StringType })
+            composable(    route = ROUTE_EDIT_PROFILE,
+                arguments = listOf(
+                    navArgument("nombre") { type = NavType.StringType },
+                    navArgument("edad") { type = NavType.StringType },
+                    navArgument("email") { type = NavType.StringType }
+                )
             ) { backStackEntry ->
-                EditProfileScreen(
-                    initialNombre = URLDecoder.decode(backStackEntry.arguments?.getString("nombre") ?: "", "UTF-8"),
-                    initialEdad = URLDecoder.decode(backStackEntry.arguments?.getString("edad") ?: "", "UTF-8"),
-                    initialEmail = URLDecoder.decode(backStackEntry.arguments?.getString("email") ?: "", "UTF-8"),
-                    onNavigateBack = { navController.popBackStack() },
-                    onSaveSuccessful = { navController.popBackStack() },
-                    onChangePassword = {
-                        navController.navigate(ROUTE_CHANGE_PASSWORD)
+                // 1. Intentar obtener la entrada de la pila de forma segura
+                val profileEntry = remember(backStackEntry) {
+                    try {
+                        navController.getBackStackEntry(ROUTE_PROFILE)
+                    } catch (e: Exception) {
+                        null
                     }
+                }
+
+                // 2. Si existe la entrada previa, usa ese ViewModel, si no, crea uno nuevo
+                val profileViewModel: ProfileViewModel = if (profileEntry != null) {
+                    viewModel(profileEntry)
+                } else {
+                    viewModel()
+                }
+
+                // 3. Extraer y decodificar los valores
+                val nombre = backStackEntry.arguments?.getString("nombre")?.let { URLDecoder.decode(it, "UTF-8") } ?: ""
+                val edad = backStackEntry.arguments?.getString("edad")?.let { URLDecoder.decode(it, "UTF-8") } ?: ""
+                val email = backStackEntry.arguments?.getString("email")?.let { URLDecoder.decode(it, "UTF-8") } ?: ""
+
+                EditProfileScreen(
+                    initialNombre = nombre,
+                    initialEdad = edad,
+                    initialEmail = email,
+                    onNavigateBack = { navController.popBackStack() },
+                    onSaveSuccessful = {
+                        profileViewModel.loadUserProfile() // Esto refrescará la pantalla de perfil al volver
+                        navController.popBackStack()
+                    },
+                    onChangePassword = { navController.navigate(ROUTE_CHANGE_PASSWORD) }
                 )
             }
 

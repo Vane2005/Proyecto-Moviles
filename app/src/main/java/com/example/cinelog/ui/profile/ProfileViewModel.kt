@@ -22,7 +22,7 @@ class ProfileViewModel(
         loadUserProfile()
     }
 
-    private fun loadUserProfile() {
+    fun loadUserProfile() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
 
         if (uid == null) {
