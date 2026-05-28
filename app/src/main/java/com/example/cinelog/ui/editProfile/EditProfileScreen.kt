@@ -187,6 +187,16 @@ fun EditProfileScreen(
                 )
             }
 
+            uiState.errorMessage?.let { error ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = error,
+                    color = Color(0xFFE53E3E),
+                    fontSize = 14.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Row(
