@@ -7,9 +7,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +34,7 @@ import com.example.cinelog.ui.components.CinelogBottomBar
 
 private const val IMAGE_BASE = "https://image.tmdb.org/t/p/w500"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(
     viewModel: UserListViewModel = viewModel(),
@@ -114,50 +118,58 @@ fun UserListScreen(
                 }
             }
 
-            if (uiState.isLoading) {
-                Box(
-                    modifier = Modifier.weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = Color.White
-                    )
-                }
-            } else {
-                if (currentMovies.isEmpty()) {
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { viewModel.loadAllLists(isRefreshing = true) },
+                modifier = Modifier.weight(1f)
+            ) {
+                if (uiState.isLoading && !uiState.isRefreshing) {
                     Box(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        EmptyListState(
-                            title = tabs[selectedTab]
+                        CircularProgressIndicator(
+                            color = Color.White
                         )
                     }
                 } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(18.dp),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
-                        contentPadding = PaddingValues(
-                            top = 20.dp,
-                            bottom = 100.dp
-                        )
-                    ) {
-                        items(currentMovies) { movie ->
-                            MovieListCard(
-                                movie = movie,
-                                onMovieClick = {
-                                    onMovieClick(movie.movieId, movie.mediaType)
-                                },
-                                onRemove = {
-                                    viewModel.removeFromList(
-                                        movie,
-                                        currentType
-                                    )
-                                }
+                    if (currentMovies.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            EmptyListState(
+                                title = tabs[selectedTab]
                             )
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(18.dp),
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            contentPadding = PaddingValues(
+                                top = 20.dp,
+                                bottom = 100.dp
+                            )
+                        ) {
+                            items(currentMovies) { movie ->
+                                MovieListCard(
+                                    movie = movie,
+                                    onMovieClick = {
+                                        onMovieClick(movie.movieId, movie.mediaType)
+                                    },
+                                    onRemove = {
+                                        viewModel.removeFromList(
+                                            movie,
+                                            currentType
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -234,8 +246,7 @@ private fun MovieListCard(
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 20.sp
                 )
-                
-                // Opcional: Mostrar si es serie o película
+
                 val typeText = if (movie.mediaType == "tv") "Serie" else "Película"
                 Text(
                     text = typeText,

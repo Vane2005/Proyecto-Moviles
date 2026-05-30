@@ -7,6 +7,7 @@ data class UserListState(
     val favoritas: List<MovieItem> = emptyList(),
     val yaVisto: List<MovieItem> = emptyList(),
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null
 )
