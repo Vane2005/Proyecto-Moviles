@@ -24,9 +24,13 @@ class UserListViewModel(
         loadAllLists()
     }
 
-    fun loadAllLists() {
+    fun loadAllLists(isRefreshing: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            if (isRefreshing) {
+                _uiState.update { it.copy(isRefreshing = true) }
+            } else {
+                _uiState.update { it.copy(isLoading = true) }
+            }
 
             val watchlistDeferred = async { userListRepository.getMoviesFromList(ListType.WATCHLIST) }
             val favoritasDeferred = async { userListRepository.getMoviesFromList(ListType.FAVORITAS) }
@@ -35,6 +39,7 @@ class UserListViewModel(
             _uiState.update {
                 it.copy(
                     isLoading = false,
+                    isRefreshing = false,
                     watchlist = watchlistDeferred.await().getOrDefault(emptyList()),
                     favoritas = favoritasDeferred.await().getOrDefault(emptyList()),
                     yaVisto = yaVistoDeferred.await().getOrDefault(emptyList())
