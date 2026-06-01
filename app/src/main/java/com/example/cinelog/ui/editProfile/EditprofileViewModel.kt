@@ -18,8 +18,9 @@ class EditProfileViewModel(
     private val _uiState = MutableStateFlow(EditProfileState())
     val uiState: StateFlow<EditProfileState> = _uiState.asStateFlow()
 
+    // Regex de Kotlin puro en lugar de android.util.Patterns para compatibilidad con pruebas unitarias (JVM)
     private fun isValidEmail(email: String): Boolean =
-        Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+        email.trim().matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
 
     fun loadUser(nombre: String, edad: String, email: String) {
         _uiState.update { it.copy(nombre = nombre, edad = edad, email = email) }
