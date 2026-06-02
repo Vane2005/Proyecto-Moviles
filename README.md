@@ -10,7 +10,7 @@
 ## 🎬 CineLog
 
 ### ¿Qué hace exactamente?
-El usuario puede buscar cualquier película o serie, ver su info detallada, y organizarlas en listas personales. También lleva un registro de lo que ya vio con su propia reseña y calificación.
+CineLog es una aplicación que permite al usuario buscar cualquier película o serie, ver su información detallada, y organizarlas en listas personales. También lleva un registro de lo que ya vio con su propia reseña y calificación.
 
 ---
 
@@ -18,11 +18,11 @@ El usuario puede buscar cualquier película o serie, ver su info detallada, y or
 
 **Autenticación**
 - Registro e inicio de sesión con Firebase Auth
-- Perfil básico del usuario (foto, nombre, correo)
+- Perfil básico del usuario (nombre, edad, correo)
 
 **Exploración**
 - Búsqueda de películas/series en tiempo real con TMDB
-- Ver detalle: sinopsis, reparto, trailer (YouTube), género, año, rating global
+- Ver detalle: sinopsis, director, trailer (YouTube), año, duración
 
 **Listas personales**
 - Ver más tarde
@@ -30,13 +30,19 @@ El usuario puede buscar cualquier película o serie, ver su info detallada, y or
 - Ya visto
 
 **Registro personal**
-- Al marcar como "ya visto", el usuario puede dejar su calificación (1-5 estrellas) y una reseña corta
-- Fecha en que la vio
+- El usuario puede dejar su calificación (1-5 estrellas) y una reseña corta para cualquier película o serie.
 
 **Estadísticas simples**
 - Cuántas películas/series ha visto
-- Géneros favoritos (basado en lo que marcó)
-- Un pequeño "wrapped" personal
+- Cantidad de peliculas/series en cada lista
+- Géneros más vistos
+
+**Reseñas**
+- Visualización, edición o eliminación de reseñas
+
+**Perfil del usuario**
+- Permite la edición de datos del usuario, al igual que la contraseña
+- Recuperación de la contraseña
 
 ---
 
@@ -56,11 +62,11 @@ El usuario puede buscar cualquier película o serie, ver su info detallada, y or
 
 ### Pantallas
 
-1. **Splash / Onboarding**
-2. **Login / Registro**
-3. **Home** — tendencias del momento (con TMDB)
-4. **Búsqueda** — resultados en tiempo real
-5. **Detalle** — poster, info, trailer, botones para agregar a lista
-6. **Mis Listas** — ver más tarde / favoritas / vistas
-7. **Reseña** — formulario al marcar como visto
-8. **Perfil** — stats personales
+1. **Login / Registro**
+2. **Home** — tendencias del momento (con TMDB)
+3. **Búsqueda** — resultados en tiempo real
+4. **Detalle** — poster, info, trailer, botones para agregar a lista
+5. **Mis Listas** — ver más tarde / favoritas / vistas
+6. **Reseña** — formulario al marcar como visto
+7. **Perfil** — stats personales
+8. **Estadísticas** - generos más vistos y cantidad de items por listas
