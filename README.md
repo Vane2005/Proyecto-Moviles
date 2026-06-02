@@ -60,6 +60,32 @@ CineLog es una aplicación que permite al usuario buscar cualquier película o s
 
 ---
 
+## Pasos para agregar la API Key
+
+### Paso 1 — Obtener la API Key de TMDB
+
+1. Ve a https://www.themoviedb.org y crea una cuenta gratuita.
+2. Una vez dentro, ve a **Configuración → API**.
+3. Solicita una API Key, selecciona **Developer** y completa el formulario indicando **Uso personal**.
+4. TMDB te proporcionará:
+   - API Key
+   - Access Token
+
+> Para este proyecto solo necesitas la **API Key**.
+
+---
+
+### Paso 2 — Guardar la API Key de forma segura
+
+No agregues la API Key directamente en el código fuente.
+
+Guárdala en el archivo `local.properties` ubicado en la raíz del proyecto (créalo si no existe). Este archivo es ignorado por Git de forma predeterminada.
+
+```properties
+TMDB_API_KEY=aqui_va_tu_api_key
+```
+
+---
 ### Pantallas
 
 1. **Login / Registro**
