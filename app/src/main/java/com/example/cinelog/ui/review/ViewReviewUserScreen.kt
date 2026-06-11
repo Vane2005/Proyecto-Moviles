@@ -179,7 +179,7 @@ fun ViewReviewUserScreen(
 
                     // ETIQUETAS
                     Text(
-                        text = "Etiquetas",
+                        text = "Personaje favorito",
                         color = Color.White,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
@@ -196,7 +196,7 @@ fun ViewReviewUserScreen(
                     ) {
 
                         Text(
-                            text = review.etiquetas.ifBlank { "Sin etiquetas" },
+                            text = review.etiquetas.ifBlank { "Sin Personaje favorito" },
                             color = Color.White,
                             fontSize = 16.sp
                         )

@@ -179,7 +179,7 @@ fun ReviewScreen(
 
                 // Sección Etiquetas
                 Text(
-                    text = "Etiquetas",
+                    text = "Personaje favorito",
                     color = CineLogColors.SectionTitle,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
@@ -191,7 +191,7 @@ fun ReviewScreen(
                 OutlinedTextField(
                     value = uiState.etiquetas,
                     onValueChange = { viewModel.onEtiquetasChange(it) },
-                    placeholder = { Text("Drama, Thriller...", color = CineLogColors.SearchText) },
+                    placeholder = { Text("Ej: Iron Man, Joker...", color = CineLogColors.SearchText) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
