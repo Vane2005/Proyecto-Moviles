@@ -191,7 +191,7 @@ fun ReviewScreen(
                 OutlinedTextField(
                     value = uiState.etiquetas,
                     onValueChange = { viewModel.onEtiquetasChange(it) },
-                    placeholder = { Text("Ej: Iron Man, Joker...", color = CineLogColors.SearchText) },
+                    placeholder = { Text("Tu personaje favorito...", color = CineLogColors.SearchText) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .shadow(elevation = 10.dp, shape = RoundedCornerShape(12.dp)),
